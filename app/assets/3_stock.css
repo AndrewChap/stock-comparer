@@ -14,6 +14,10 @@ h1{
   margin-left: auto;
   margin-right: auto;
 }
+.author{
+  margin-left:10px;
+  font-size:22px;
+}
 /* Mortgage headers */
 h5{
   font-size: 18px;
@@ -132,7 +136,7 @@ input[type="button"] {
   color: #FDC;
   font-size: 12px;
   border-color: #999;
-  margin-left: 140px;
+  margin-left: 0px;
 }
 .button:hover,
 button:hover,
