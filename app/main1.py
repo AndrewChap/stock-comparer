@@ -78,9 +78,6 @@ endDate = datetime.now()
 startDate = endDate - relativedelta(years=1)
 # Create stocks object
 #stocks = Stocks('VTI', 'VXUS', 'BND', 'BNDX', start=startDate, end=endDate)
-x = np.array([0.,1.,2.,3.])
-y = np.array([2.,1.,4.,3.])
-
 dashApp = dash.Dash(
     __name__,
     server=server,
