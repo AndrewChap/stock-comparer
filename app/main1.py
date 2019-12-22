@@ -21,7 +21,7 @@ from flask import Flask
 import dash
 import dash_core_components as dcc
 import dash_html_components as html
-from dash.dependencies import Input, Output
+from dash.dependencies import Input, Output, State
 # Numpy for arrays
 import numpy as np
 # Pandas for reading stocks
@@ -40,23 +40,23 @@ server = Flask(__name__)
 
 # Create stock objects
 class Stock:
-    def __init__(self,name,start,end):
+    def __init__(self,name,dateBegin,dateEnd):
         self.name = name
-        self.df = web.DataReader(self.name, 'yahoo', start, end)
+        self.df = web.DataReader(self.name, 'yahoo', dateBegin, dateEnd)
         self.vals = self.df['Adj Close'].values
         self.time = self.df.index
         self.valsNorm = self.vals/self.vals[0]
 class Stocks:
     def __init__(
         self,
-        *args,
-        start = datetime.now() - relativedelta(years=1),
-        end = datetime.now()):
+        listOfStockSymbols,
+        dateBegin = datetime.now() - relativedelta(years=1),
+        dateEnd = datetime.now()):
         self.time = None
         self.listOfStocks = []
-        for arg in args:
+        for stockSymbol in listOfStockSymbols:
             try:
-                stock = Stock(arg,start=start,end=end)
+                stock = Stock(stockSymbol,dateBegin=dateBegin,dateEnd=dateEnd)
                 self.listOfStocks.append(stock)
                 self.set_global_time(othertime = stock.time)
             except pandas_datareader._utils.RemoteDataError as e:
@@ -79,35 +79,54 @@ class Stocks:
 
 #Set start and end as one year ago to now
 endDate = datetime.now()
-startDate = endDate - relativedelta(years=1)
-# Create stocks object
-#stocks = Stocks('VTI', 'VXUS', 'BND', 'BNDX', start=startDate, end=endDate)
+dateBegin = endDate - relativedelta(years=1)
+
 dashApp = dash.Dash(
     __name__,
     server=server,
     #routes_pathname_prefix='/dash/'
 )
 dashApp.scripts.config.serve_locally = True
+plotButton = html.Button(id='plotstocks',n_clicks=0,children='Plot them stocks!')
 
+datesBox = html.Div(
+        [
+            html.Label('Starting Date'),
+            dcc.Input(id='dateBegin',className='date',
+                value=(datetime.now()-relativedelta(years=1)).strftime("%m/%d/%Y")),
+            html.Label('End Date'),
+            dcc.Input(id='dateEnd',className='date',
+                value=datetime.now().strftime("%m/%d/%Y")),
+
+            ], className='pinput pretty-container'
+        )
+stocksBox = html.Div(
+        [
+            html.Label('Stocks to Plot'),
+            dcc.Textarea(id='stocksbox',autoFocus='true',accessKey='s',className='stocksbox',contentEditable=True,disabled=False,value='VTI\nBND'),
+            ], className='pinput pretty-container'
+        )
 
 dashApp.layout = html.Div(
     [
         html.Div(
             [
+                plotButton,
                 html.H1(
                     "stock-plotter.com!",
                     className='title',
                 ),
+                html.H3(
+                    "By Andrew Chap",
+                    className='author',
+                )
             ],
             className = 'title-nav',
         ),
-        html.Label('Text Input'),
-        #dcc.Input(id='mir-input', value='VTI', type='text'),
-        dcc.Textarea(id='stocksbox',autoFocus='true',accessKey='s',className='stocksbox',contentEditable=True,disabled=False,value='VTI\nBND'),
+        html.Div([stocksBox, datesBox],className='input-wrapper'),
         #html.Div(id='mir-div'),
-        dcc.Graph(
-            id = 'main-plot',
-        ),
+        dcc.Graph(id = 'main-plot'),
+        html.Div("*Past behavior does not predict future performance")
     ]
 )
 
@@ -120,19 +139,29 @@ dashApp.layout = html.Div(
 
 @dashApp.callback(
         Output('main-plot', 'figure'),
-        [Input('stocksbox', 'value')]
+        [Input('plotstocks','n_clicks')],
+        [State('stocksbox', 'value'),
+         State('dateBegin', 'value'),
+         State('dateEnd'  , 'value')]
     )
-def update_figure(stocksbox):
-    listOfStocks = stocksbox.strip('\n').split('\n')
-    print(listOfStocks)
-    stocks = Stocks(*listOfStocks)
+def update_figure(n_clicks,stocksbox,dateBeginAsString,dateEndAsString):
+    dateBeginAsList = dateBeginAsString.split('/')
+    dateEndAsList = dateEndAsString.split('/')
+    dateBegin = datetime(int(dateBeginAsList[2]),int(dateBeginAsList[0]),int(dateBeginAsList[1]))
+    dateEnd = datetime(int(dateEndAsList[2]),int(dateEndAsList[0]),int(dateEndAsList[1]))
+    listOfStockSymbols = stocksbox.strip('\n').split('\n')
+    print(listOfStockSymbols)
+    stocks = Stocks(
+            listOfStockSymbols = listOfStockSymbols,
+            dateBegin = dateBegin,
+            dateEnd = dateEnd)
     data = [ 
             {
                 'x': stock.time,
                 'y': stock.valsNorm,
                 'name': stock.name,
-                }
-            for stock in stocks.listOfStocks]
+            } for stock in stocks.listOfStocks
+        ]
     return {
         'data': data,
         'layout': {
