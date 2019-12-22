@@ -16,16 +16,30 @@
 import logging
 
 from flask import Flask
+
+# Dash for plots
 import dash
 import dash_core_components as dcc
 import dash_html_components as html
 from dash.dependencies import Input, Output
-
+# Numpy for arrays
+import numpy as np
+# Pandas for reading stocks
+import pandas as pd
+import pandas_datareader.data as web
+from pandas import Series, DataFrame
+# Datetime for dealing with stock dates
+from datetime import datetime
+from dateutil.relativedelta import relativedelta
+# pdb for debugging
+import pdb
+db = pdb.set_trace
 
 server = Flask(__name__)
 
-x = [0.,1.,2.,3.]
-y = [2.,1.,4.,3.]
+
+x = np.array([0.,1.,2.,3.])
+y = np.array([2.,1.,4.,3.])
 
 dashApp = dash.Dash(
     __name__,
