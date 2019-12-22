@@ -1,0 +1,240 @@
+body {
+  margin: 0;
+  font-size: 12px;
+}
+
+/* Page title */
+h1{
+  font-size: 30px;	
+  font-weight: bold;
+  color: #FFF;
+}
+.title{
+  margin-top: 18px;	
+  margin-left: auto;
+  margin-right: auto;
+}
+/* Mortgage headers */
+h5{
+  font-size: 18px;
+  font-weight: bold;
+}
+.mortgage-name{
+  font-size: 18px;
+  font-weight: bold;
+  background-color: red;
+  border: None;
+}
+
+.title-nav{
+  background-color: #000;
+  height: 46px;
+  align-items: center;
+  padding: 0 10px;
+  /*border: 1px solid rgba(238,238,238 ,1);*/
+  color: rgba(117,117,117 ,1);
+  /*box-shadow: 5px 10px 20px -20px rgba(85,172,238 ,1);*/
+  display: flex;
+}
+.top-nav{
+  background-color: #64A;
+  height: 46px;
+  align-items: center;
+  padding: 0 10px;
+  /*border: 1px solid rgba(238,238,238 ,1);*/
+  color: rgba(117,117,117 ,1);
+  /*box-shadow: 5px 10px 20px -20px rgba(85,172,238 ,1);*/
+  display: flex;
+  box-shadow: 4px 4px 4px lightgrey;
+  margin-bottom: 8px;
+}
+
+.input-wrapper {
+  display: flex;
+  flex-wrap: wrap;
+} 
+.field-label{
+  text-align: left;
+  font-family: "Lucida Console", Monaco, monospace;
+  font-size: 12px;
+  color: #777;
+}
+.pinput{
+  width: 170px;
+  margin-right: auto;
+  margin-left: auto;
+  text-align: center;
+}
+.pretty-container {
+  border-radius: 10px;
+  background-color: #F0F6FF;
+  margin: 10px;
+  padding: 18px;
+  position: relative;
+  box-shadow: 2px 2px 2px lightgrey;
+  border-color: #E0E6EE;
+  border-width: 1px;
+}
+
+.panel {
+  /*border-color: #EEF;
+  border-width: 1px;
+  border-radius: 5px;
+  border-style: solid;*/
+}
+
+.left {
+  width: 45%;
+  float: left;
+}
+.right {
+  width: 55%;
+  float: left;
+}
+
+
+/* From: https://stackoverflow.com/a/6663566/1949542 */
+.div-table {
+  display: table;         
+  width: auto;         
+  background-color: #eee;         
+  border: 1px solid #666666;         
+  border-spacing: 5px; /* cellspacing:poor IE support for  this */
+}
+.div-table-row {
+  display: table-row;
+  width: auto;
+  clear: both;
+}
+.div-table-col {
+  float: left; /* fix for  buggy browsers */
+  display: table-column;         
+  width: 200px;         
+  background-color: #ccc;  
+}
+
+.closeButton {
+  color: #000;
+  margin: 0 !important;
+  padding: 0 !important;
+  height: 0 !important;
+  line-height: 0 !important;
+  /*border: None;*/
+}
+
+/* Buttons
+–––––––––––––––––––––––––––––––––––––––––––––––––– */
+.button,
+button,
+input[type="submit"],
+input[type="reset"],
+input[type="button"] {
+  color: #FDC;
+  font-size: 12px;
+  border-color: #999;
+  margin-left: 140px;
+}
+.button:hover,
+button:hover,
+input[type="submit"]:hover,
+input[type="reset"]:hover,
+input[type="button"]:hover,
+.button:focus,
+button:focus,
+input[type="submit"]:focus,
+input[type="reset"]:focus,
+input[type="button"]:focus {
+  color: #FFF;
+  border-color: #DDD;
+  outline: 0; }
+.button.button-primary,
+button.button-primary,
+input[type="submit"].button-primary,
+input[type="reset"].button-primary,
+input[type="button"].button-primary {
+  color: #FFF;
+  background-color: #33C3F0;
+  border-color: #33C3F0; }
+.button.button-primary:hover,
+button.button-primary:hover,
+input[type="submit"].button-primary:hover,
+input[type="reset"].button-primary:hover,
+input[type="button"].button-primary:hover,
+.button.button-primary:focus,
+button.button-primary:focus,
+input[type="submit"].button-primary:focus,
+input[type="reset"].button-primary:focus,
+input[type="button"].button-primary:focus {
+  color: #FFF;
+  background-color: #1EAEDB;
+  border-color: #1EAEDB; }
+
+
+/* Forms
+–––––––––––––––––––––––––––––––––––––––––––––––––– */
+input[type="email"],
+input[type="number"],
+input[type="search"],
+input[type="text"],
+input[type="tel"],
+input[type="url"],
+input[type="password"],
+textarea,
+select {
+  height: 20px;
+  padding: 3px 5px; /* The 6px vertically centers text on FF, ignored by Webkit */
+  background-color: #fff;
+  border: 1px solid #D1D1D1;
+  border-radius: 4px;
+  box-shadow: none;
+  box-sizing: border-box; 
+  font-family: inherit;
+  font-size: inherit; /*https://stackoverflow.com/questions/6080413/why-doesnt-input-inherit-the-font-from-body*/}
+/* Removes awkward default styles on some inputs for iOS */
+input[type="email"],
+input[type="number"],
+input[type="search"],
+input[type="text"],
+input[type="tel"],
+input[type="url"],
+input[type="password"],
+textarea {
+  -webkit-appearance: none;
+     -moz-appearance: none;
+          appearance: none; }
+textarea {
+  min-height: 65px;
+  padding-top: 6px;
+  padding-bottom: 6px; }
+input[type="email"]:focus,
+input[type="number"]:focus,
+input[type="search"]:focus,
+input[type="text"]:focus,
+input[type="tel"]:focus,
+input[type="url"]:focus,
+input[type="password"]:focus,
+textarea:focus,
+select:focus {
+  border: 1px solid #33C3F0;
+  outline: 0; }
+label,
+legend {
+  display: block;
+  margin-bottom: 0px; }
+fieldset {
+  padding: 0;
+  border-width: 0; }
+input[type="checkbox"],
+input[type="radio"] {
+  display: inline; }
+label > .label-body {
+  display: inline-block;
+  margin-left: .5rem;
+  font-weight: normal; }
+
+.mortgage-name{
+  font-size: 18px;
+  font-weight: bold;
+  background-color: transparent !important;
+  border: None !important;
+}
