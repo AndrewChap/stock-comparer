@@ -26,6 +26,7 @@ from dash.dependencies import Input, Output
 import numpy as np
 # Pandas for reading stocks
 import pandas as pd
+import pandas_datareader
 import pandas_datareader.data as web
 from pandas import Series, DataFrame
 # Datetime for dealing with stock dates
@@ -54,9 +55,12 @@ class Stocks:
         self.time = None
         self.listOfStocks = []
         for arg in args:
-            stock = Stock(arg,start=start,end=end)
-            self.listOfStocks.append(stock)
-            self.set_global_time(othertime = stock.time)
+            try:
+                stock = Stock(arg,start=start,end=end)
+                self.listOfStocks.append(stock)
+                self.set_global_time(othertime = stock.time)
+            except pandas_datareader._utils.RemoteDataError as e:
+                print(e)
     def set_global_time(self,othertime):
         if self.time is None:
             self.time = othertime
@@ -98,33 +102,41 @@ dashApp.layout = html.Div(
             className = 'title-nav',
         ),
         html.Label('Text Input'),
-        dcc.Input(id='mir-input', value='VTI', type='text'),
-        html.Div(id='mir-div'),
+        #dcc.Input(id='mir-input', value='VTI', type='text'),
+        dcc.Textarea(id='stocksbox',autoFocus='true',accessKey='s',className='stocksbox',contentEditable=True,disabled=False,value='VTI\nBND'),
+        #html.Div(id='mir-div'),
         dcc.Graph(
             id = 'main-plot',
         ),
     ]
 )
 
-@dashApp.callback(
-    Output(component_id='mir-div', component_property='children'),
-    [Input(component_id='mir-input', component_property='value')]
-)
-def update_output_div(input_value):
-    return 'Your stock is {}'.format(input_value)
+#@dashApp.callback(
+#    Output(component_id='mir-div', component_property='children'),
+#    [Input(component_id='mir-input', component_property='value')]
+#)
+#def update_output_div(input_value):
+#    return 'Your stock is {}'.format(input_value)
 
 @dashApp.callback(
-    Output('main-plot', 'figure'),
-    [Input('mir-input', 'value')])
-def update_figure(stock):
-    stocks = Stocks(stock)
+        Output('main-plot', 'figure'),
+        [Input('stocksbox', 'value')]
+    )
+def update_figure(stocksbox):
+    listOfStocks = stocksbox.strip('\n').split('\n')
+    print(listOfStocks)
+    stocks = Stocks(*listOfStocks)
+    data = [ 
+            {
+                'x': stock.time,
+                'y': stock.valsNorm,
+                'name': stock.name,
+                }
+            for stock in stocks.listOfStocks]
     return {
-        'data': [
-            {'x': stocks.listOfStocks[0].time, 'y': stocks.listOfStocks[0].valsNorm,
-             'type': 'line', 'name': stocks.listOfStocks[0].name},
-        ],
+        'data': data,
         'layout': {
-            'title': 'Dash Data Visualization'
+            'title': 'Historical Stock Prices'
         }
     }
 
