@@ -37,7 +37,47 @@ db = pdb.set_trace
 
 server = Flask(__name__)
 
+# Create stock objects
+class Stock:
+    def __init__(self,name,start,end):
+        self.name = name
+        self.df = web.DataReader(self.name, 'yahoo', start, end)
+        self.vals = self.df['Adj Close'].values
+        self.time = self.df.index
+        self.valsNorm = self.vals/self.vals[0]
+class Stocks:
+    def __init__(
+        self,
+        *args,
+        start = datetime.now() - relativedelta(years=1),
+        end = datetime.now()):
+        self.time = None
+        self.listOfStocks = []
+        for arg in args:
+            stock = Stock(arg,start=start,end=end)
+            self.listOfStocks.append(stock)
+            self.set_global_time(othertime = stock.time)
+    def set_global_time(self,othertime):
+        if self.time is None:
+            self.time = othertime
+        else:
+            if othertime[0] < self.time[0]:
+                for i in range(len(othertime)):
+                    if othertime[i] == self.time[0]:
+                        index = i-1
+                self.time = othertime[0:index] + self.time
+            if othertime[-1] > self.time[-1]:
+                for i in range(len(othertime)):
+                    if othertime[-1-i] == self.time[-1]:
+                        index = i-1
+                self.time = self.time + othertime[index:]
 
+
+#Set start and end as one year ago to now
+endDate = datetime.now()
+startDate = endDate - relativedelta(years=1)
+# Create stocks object
+Stocks = Stocks('VTI', 'VXUS', 'BND', 'BNDX', start=startDate, end=endDate)
 x = np.array([0.,1.,2.,3.])
 y = np.array([2.,1.,4.,3.])
 
