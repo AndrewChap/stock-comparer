@@ -77,7 +77,7 @@ class Stocks:
 endDate = datetime.now()
 startDate = endDate - relativedelta(years=1)
 # Create stocks object
-Stocks = Stocks('VTI', 'VXUS', 'BND', 'BNDX', start=startDate, end=endDate)
+#stocks = Stocks('VTI', 'VXUS', 'BND', 'BNDX', start=startDate, end=endDate)
 x = np.array([0.,1.,2.,3.])
 y = np.array([2.,1.,4.,3.])
 
@@ -89,40 +89,42 @@ dashApp = dash.Dash(
 dashApp.scripts.config.serve_locally = True
 
 
-dashApp.layout = html.Div(children=[
-    html.H1(children='Hello Dash!!',
-	    style={
-                'textAlign' : 'center',
-		}
-),
-    html.Div(children='''
-        Dash: A
-    '''),
-    dcc.Graph(
-        id = 'main-plot',
-    ),
-    html.Label('Text Input'),
-    dcc.Input(id='mir-input', value='3.5', type='text'),
-    html.Div(id='mir-div')
-])
+dashApp.layout = html.Div(
+    [
+        html.Div(
+            [
+                html.H1(
+                    "stock-plotter.com!",
+                    className='title',
+                ),
+            ],
+            className = 'title-nav',
+        ),
+        html.Label('Text Input'),
+        dcc.Input(id='mir-input', value='VTI', type='text'),
+        html.Div(id='mir-div'),
+        dcc.Graph(
+            id = 'main-plot',
+        ),
+    ]
+)
 
 @dashApp.callback(
     Output(component_id='mir-div', component_property='children'),
     [Input(component_id='mir-input', component_property='value')]
 )
 def update_output_div(input_value):
-    input_float = float(input_value)
-    return 'Rate = {:.2f}%, x[0] = {}'.format(input_float,y[0])
+    return 'Your stock is {}'.format(input_value)
 
 @dashApp.callback(
     Output('main-plot', 'figure'),
     [Input('mir-input', 'value')])
-def update_figure(input_value):
-    input_float = float(input_value)
+def update_figure(stock):
+    stocks = Stocks(stock)
     return {
         'data': [
-            {'x': x, 'y': y+input_float,
-             'type': 'line', 'name': 'SF'},
+            {'x': stocks.listOfStocks[0].time, 'y': stocks.listOfStocks[0].valsNorm,
+             'type': 'line', 'name': stocks.listOfStocks[0].name},
         ],
         'layout': {
             'title': 'Dash Data Visualization'
