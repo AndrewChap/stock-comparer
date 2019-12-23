@@ -107,6 +107,58 @@ stocksBox = html.Div(
             ], className='pinput pretty-container'
         )
 
+topBar = html.Div(
+            [
+                html.Button(id='plotstocks',n_clicks=0,children='Plot them stocks!'),
+                html.H1(
+                    "stock-plotter.com!",
+                    className='title',
+                ),
+                html.H3(
+                    "By Andrew Chap",
+                    className='author',
+                )
+            ],
+            className = 'title-nav',
+        ),
+leftPanel = html.Div(
+    html.Div([stocksBox, datesBox],className='input-wrapper'),
+    className='left',
+)
+# Right panel: the output plot
+rightPanel = html.Div(
+    html.Div(    
+        dcc.Graph( id = 'main-plot'),
+        className='panel',
+    ),
+    className='right',
+)
+#dashApp.layout = html.Div(
+#    [
+#        html.Div(
+#            [
+#                html.Button(id='plotstocks',n_clicks=0,children='Plot them stocks!'),
+#                html.H1(
+#                    "stock-plotter.com!",
+#                    className='title',
+#                ),
+#                html.H3(
+#                    "By Andrew Chap",
+#                    className='author',
+#                )
+#            ],
+#            className = 'title-nav',
+#        ),
+#        topBar,
+#        leftPanel,
+#        rightPanel,
+#        #html.Div([stocksBox, datesBox],className='input-wrapper'),
+#        #html.Div(id='mir-div'),
+#        #dcc.Graph(id = 'main-plot'),
+#        html.Div("*Past behavior does not predict future performance")
+#    ]
+#)
+
 dashApp.layout = html.Div(
     [
         html.Div(
@@ -124,13 +176,13 @@ dashApp.layout = html.Div(
             className = 'title-nav',
         ),
         html.Div([stocksBox, datesBox],className='input-wrapper'),
+        #leftPanel,
+        #rightPanel,
         #html.Div(id='mir-div'),
         dcc.Graph(id = 'main-plot'),
         html.Div("*Past behavior does not predict future performance")
     ]
 )
-
-#@dashApp.callback(
 #    Output(component_id='mir-div', component_property='children'),
 #    [Input(component_id='mir-input', component_property='value')]
 #)
@@ -165,7 +217,7 @@ def update_figure(n_clicks,stocksbox,dateBeginAsString,dateEndAsString):
     return {
         'data': data,
         'layout': {
-            'title': 'Historical Stock Prices'
+            'margin': {'t': 30, 'b': 30},
         }
     }
 
