@@ -57,6 +57,11 @@ h5{
   display: flex;
   flex-wrap: wrap;
 } 
+.everything-wrapper {
+  display: flex;
+  flex-wrap: wrap;
+} 
+
 .field-label{
   text-align: left;
   font-family: "Lucida Console", Monaco, monospace;
@@ -68,6 +73,7 @@ h5{
   margin-right: auto;
   margin-left: auto;
   text-align: center;
+  float: left;
 }
 .pretty-container {
   border-radius: 10px;
@@ -88,12 +94,14 @@ h5{
 }
 
 .left {
-  width: 45%;
-  float: left;
+  /*width: 45%;
+  float: left;*/
 }
 .right {
-  width: 55%;
-  float: left;
+  width: auto;
+  overflow: hidden;
+  /*width: 55%;
+  float: left;*/
 }
 
 
@@ -133,10 +141,11 @@ button,
 input[type="submit"],
 input[type="reset"],
 input[type="button"] {
-  color: #FDC;
+  color: #337;
   font-size: 12px;
   border-color: #999;
   margin-left: 0px;
+  margin: 10px;
 }
 .button:hover,
 button:hover,
