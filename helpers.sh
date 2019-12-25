@@ -14,6 +14,17 @@ function v(){
     echo vi $main
     vi $main
 }
+function vc(){
+    main=$(switchmain $1)
+    echo vi -O $main app/assets/3_stock.css
+    vi -O $main app/assets/3_stock.css
+}
+# helper function to vim app
+function v(){
+    main=$(switchmain $1)
+    echo vi $main
+    vi $main
+}
 # helper function to test app
 function t(){
     main=$(switchmain $1)
