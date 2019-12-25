@@ -93,18 +93,26 @@ h5{
   border-style: solid;*/
 }
 
-.left {
-  /*width: 45%;
-  float: left;*/
+.leftside {
+  height: 20px;
+  width: 200px;
+  background: blue;
+  float: left;
 }
-.right {
+.rightside {
+  height: 20px;
   width: auto;
   overflow: hidden;
+  background: red;
   /*width: 55%;
   float: left;*/
 }
-
-
+.contents{
+  width: 100%;  
+  background-color: #000;
+  height: 46px;
+  color: rgba(117,117,117 ,1);
+}
 /* From: https://stackoverflow.com/a/6663566/1949542 */
 .div-table {
   display: table;         
