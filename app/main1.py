@@ -175,6 +175,10 @@ rightPanel = html.Div(
 
 dashApp.layout = html.Div(
     [
+        html.Div([
+            html.Div(className='left'),
+            html.Div(className='right')],
+            className='container'),
         html.Div(
             [
                 #plotButton,
@@ -194,6 +198,7 @@ dashApp.layout = html.Div(
             bothbox,
             rightPanel],
             className='everything-wrapper'),
+        #dcc.Graph(id = 'main-plot',style={'width':'100%'}),
         #html.Div(id='mir-div'),
         #dcc.Graph(id = 'main-plot'),
         html.Div("*Past behavior does not predict future performance")
