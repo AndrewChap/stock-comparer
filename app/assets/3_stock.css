@@ -94,16 +94,16 @@ h5{
 }
 
 .leftside {
-  height: 20px;
-  width: 200px;
-  background: blue;
+  height: 500px;
+  width: 218px;
+  /*background: blue;*/
   float: left;
 }
 .rightside {
-  height: 20px;
+  height: 500px;
   width: auto;
   overflow: hidden;
-  background: red;
+  /*background: red;*/
   /*width: 55%;
   float: left;*/
 }
