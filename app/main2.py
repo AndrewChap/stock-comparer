@@ -88,6 +88,38 @@ dashApp = dash.Dash(
 )
 dashApp.scripts.config.serve_locally = True
 dashApp.config.suppress_callback_exceptions = True
+#plotButton = html.Button(id='plotstocks',n_clicks=0,children="Plot 'em!")
+#
+#datesBox = html.Div(
+#        [
+#            html.Label('Starting Date'),
+#            dcc.Input(id='dateBegin',className='date',
+#                value=(datetime.now()-relativedelta(years=1)).strftime("%m/%d/%Y")),
+#            html.Label('End Date'),
+#            dcc.Input(id='dateEnd',className='date',
+#                value=datetime.now().strftime("%m/%d/%Y")),
+#            ], className='pinput pretty-container'
+#        )
+#stocksBox = html.Div(
+#        [
+#            html.Label('Stocks to Plot'),
+#            dcc.Textarea(id='stocksbox',autoFocus='true',className='stocksbox',value='VTI\nBND'),
+#        ], className='pinput pretty-container'
+#)
+#
+#bothbox = html.Div(
+#    [
+#        html.Label('Stocks to Plot'),
+#        dcc.Textarea(id='stocksbox',autoFocus='true',className='stocksbox',rows=8,value='VTI\nBND',style={'height':'100px'}),
+#        html.Label('Starting Date'),
+#        dcc.Input(id='dateBegin',className='date',
+#            value=(datetime.now()-relativedelta(years=1)).strftime("%m/%d/%Y")),
+#        html.Label('End Date'),
+#        dcc.Input(id='dateEnd',className='date',
+#            value=datetime.now().strftime("%m/%d/%Y")),
+#        plotButton,
+#    ], className='pinput pretty-container'
+#)
 plotButton = html.Button(id='plotstocks',n_clicks=0,children="Plot 'em!")
 
 datesBox = html.Div(
@@ -123,7 +155,7 @@ bothbox = html.Div(
 
 topBar = html.Div(
             [
-                html.Button(id='plotstocks',n_clicks=0,children='Plot them stocks!'),
+                #html.Button(id='plotstocks',n_clicks=0,children='Plot them stocks!'),
                 html.H1(
                     "stock-plotter.com!",
                     className='title',
@@ -178,8 +210,26 @@ dashApp.layout = html.Div(
     [
         html.Div(
             [
-                html.Div(className='leftside'),
-                html.Div(className='rightside')
+                html.Div(
+                    [
+                        #html.Button(id='plotstocks',n_clicks=0,children='Plot them stocks!'),
+                        html.H1(
+                            "stock-plotter.com!",
+                            className='title',
+                            ),
+                        html.H3(
+                            "By Andrew Chap",
+                            className='author',
+                            )
+                        ],
+                    className = 'title-nav',
+                    ),
+                html.Div(
+                    bothbox,
+                    className='leftside'),
+                html.Div(
+                    dcc.Graph(id='main-plot',style={'width':'100%'}),
+                    className='rightside')
             ],
             className = 'contents',
         ),
