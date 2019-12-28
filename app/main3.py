@@ -46,6 +46,8 @@ class Stock:
         self.vals = self.df['Adj Close'].values
         self.time = self.df.index
         self.valsNorm = self.vals/self.vals[0]
+#    def norm_to_date(self,date):
+        
 class Stocks:
     def __init__(
         self,
@@ -229,14 +231,22 @@ dashApp.layout = html.Div(
                     className='leftside'),
                 html.Div(
                     dcc.Graph(id='main-plot',style={'width':'100%'}),
-                    className='rightside')
+                    className='rightside'),
             ],
             className = 'contents',
         ),
-        #html.Div([
-         #   html.Div(className='left'),
-          #  html.Div(className='right')],
-           # className='container'),
+        html.Div(
+            [
+                dcc.Slider(
+                    id='my-slider',
+                    min=0,
+                    max=100,# len(stocks.time),
+                    step=1,
+                    value=0,
+                ),
+                html.Div(id='slider-output-container')
+            ]
+	)
     ]
 )
 #    Output(component_id='mir-div', component_property='children'),
@@ -245,6 +255,14 @@ dashApp.layout = html.Div(
 #def update_output_div(input_value):
 #    return 'Your stock is {}'.format(input_value)
 
+@dashApp.callback(
+    dash.dependencies.Output('slider-output-container', 'children'),
+    [dash.dependencies.Input('my-slider', 'value')])
+def update_output(value):
+    return 'You have selected "{}"'.format(value)
+        
+        
+        
 @dashApp.callback(
         Output('main-plot', 'figure'),
         [Input('plotstocks','n_clicks')],
