@@ -42,6 +42,8 @@ server = Flask(__name__)
 class Stock:
     def __init__(self,name,dateBegin,dateEnd):
         self.name = name
+        self.dateBegin = dateBegin
+        self.dateEnd = dateEnd
         self.df = web.DataReader(self.name, 'yahoo', dateBegin, dateEnd)
         self.vals = self.df['Adj Close'].values
         self.time = self.df.index
@@ -51,7 +53,7 @@ class Stock:
 class Stocks:
     def __init__(
         self,
-        listOfStockSymbols,
+        listOfStockSymbols = [],
         dateBegin = datetime.now() - relativedelta(years=1),
         dateEnd = datetime.now()):
         self.time = None
@@ -78,6 +80,27 @@ class Stocks:
                         index = i-1
                 self.time = self.time + othertime[index:]
 
+    def remove_stock(self,stockSymbol):
+        # THIS WONT WORK
+        for i in range(len(self.listOfStocks)):
+            if self.listOfStocks[i].name == stockSymbol:
+                del self.listOfStocksa[i]
+    def set_dates(self,dateBegin,dateEnd):
+        if self.dateBegin != dateBegin and self.dateEnd != dateEnd:
+            self.listOfStocks = []
+            self.listOfStockSymbols = []
+    def update_list_of_stock_symbols(self,newListOfStockSymbols):
+        # Delete any stocks not in the list:
+        for stockSymbol in self.listOfStockSymbols:
+            if stockSymbol not in newListOfStockSymbols:
+                self.listOfStocks.remove_stock(stockSymbol)
+                self.listOfStockSymbols.pop(stockSymbol)
+        for stockSymbol in newListOfStockSymbols:
+            if stockSymbol in self.listOfStockSymbols:
+                self.listOfStocks.append(stock(name = stockSymbol, dateBegin = self.dateBegin, dateEnd = self.dateEnd)):
+                    
+
+stocks = Stocks()
 
 #Set start and end as one year ago to now
 endDate = datetime.now()
@@ -277,10 +300,8 @@ def update_figure(n_clicks,stocksbox,dateBeginAsString,dateEndAsString):
     dateEnd = datetime(int(dateEndAsList[2]),int(dateEndAsList[0]),int(dateEndAsList[1]))
     listOfStockSymbols = stocksbox.strip('\n').split('\n')
     print(listOfStockSymbols)
-    stocks = Stocks(
-            listOfStockSymbols = listOfStockSymbols,
-            dateBegin = dateBegin,
-            dateEnd = dateEnd)
+    stocks.set_dates(dateBegin = dateBegin, dateEnd = dateEnd)
+    stocks.update_list_of_stock_symbols(listOfStockSymbols = listOfStockSymbols)
     data = [ 
             {
                 'x': stock.time,
