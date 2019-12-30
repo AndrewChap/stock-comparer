@@ -34,6 +34,7 @@ from datetime import datetime
 from dateutil.relativedelta import relativedelta
 # pdb for debugging
 import pdb
+from collections import OrderedDict
 db = pdb.set_trace
 
 server = Flask(__name__)
@@ -56,6 +57,8 @@ class Stocks:
         listOfStockSymbols = [],
         dateBegin = datetime.now() - relativedelta(years=1),
         dateEnd = datetime.now()):
+        self.dateBegin = dateBegin
+        self.dateEnd = dateEnd
         self.time = None
         self.listOfStocks = []
         for stockSymbol in listOfStockSymbols:
@@ -80,24 +83,29 @@ class Stocks:
                         index = i-1
                 self.time = self.time + othertime[index:]
 
-    def remove_stock(self,stockSymbol):
-        # THIS WONT WORK
-        for i in range(len(self.listOfStocks)):
-            if self.listOfStocks[i].name == stockSymbol:
-                del self.listOfStocksa[i]
     def set_dates(self,dateBegin,dateEnd):
         if self.dateBegin != dateBegin and self.dateEnd != dateEnd:
+            self.dateBegin = dateBegin
+            self.dateEnd = dateEnd
             self.listOfStocks = []
             self.listOfStockSymbols = []
     def update_list_of_stock_symbols(self,newListOfStockSymbols):
         # Delete any stocks not in the list:
-        for stockSymbol in self.listOfStockSymbols:
-            if stockSymbol not in newListOfStockSymbols:
-                self.listOfStocks.remove_stock(stockSymbol)
-                self.listOfStockSymbols.pop(stockSymbol)
+        newListOfStocks = [stock for stock in self.listOfStocks if stock.name not in newListOfStockSymbols]
+        self.listOfStocks = newListOfStocks
+        # Add new stocks to list
+
+        #newListOfStockSymbols = []
+        #
+        #for stockSymbol in self.listOfStockSymbols:
+        #    if stockSymbol not in newListOfStockSymbols:
+        #        self.listOfStocks.remove_stock(stockSymbol)
+        #        self.listOfStockSymbols.pop(stockSymbol)
         for stockSymbol in newListOfStockSymbols:
-            if stockSymbol in self.listOfStockSymbols:
-                self.listOfStocks.append(stock(name = stockSymbol, dateBegin = self.dateBegin, dateEnd = self.dateEnd)):
+            if stockSymbol not in self.listOfStockSymbols:
+                self.listOfStocks.append(Stock(name = stockSymbol, dateBegin = self.dateBegin, dateEnd = self.dateEnd))
+        self.listOfStockSymbols = newListOfStockSymbols
+        #db()
                     
 
 stocks = Stocks()
@@ -301,7 +309,8 @@ def update_figure(n_clicks,stocksbox,dateBeginAsString,dateEndAsString):
     listOfStockSymbols = stocksbox.strip('\n').split('\n')
     print(listOfStockSymbols)
     stocks.set_dates(dateBegin = dateBegin, dateEnd = dateEnd)
-    stocks.update_list_of_stock_symbols(listOfStockSymbols = listOfStockSymbols)
+    stocks.update_list_of_stock_symbols(newListOfStockSymbols = listOfStockSymbols)
+    db()
     data = [ 
             {
                 'x': stock.time,
