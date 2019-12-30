@@ -1,20 +1,4 @@
-# Copyright 2015 Google Inc. All Rights Reserved.
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-
-# [START gae_flex_quickstart]
 import logging
-
 from flask import Flask
 
 # Dash for plots
@@ -49,7 +33,8 @@ class Stock:
         self.vals = self.df['Adj Close'].values
         self.time = self.df.index
         self.valsNorm = self.vals/self.vals[0]
-#    def norm_to_date(self,date):
+    def __repr__(self):
+        return 'stock({},{},{})'.format(self.name,self.dateBegin,self.dateEnd)
         
 class Stocks:
     def __init__(
@@ -90,9 +75,12 @@ class Stocks:
             self.listOfStocks = []
             self.listOfStockSymbols = []
     def update_list_of_stock_symbols(self,newListOfStockSymbols):
-        # Delete any stocks not in the list:
-        newListOfStocks = [stock for stock in self.listOfStocks if stock.name not in newListOfStockSymbols]
+        # Create new list from old list only if items' symbols are in input list:
+        newListOfStocks = [stock for stock in self.listOfStocks if stock.name in newListOfStockSymbols]
+        print("newListOfStocks = {}".format(newListOfStocks))
+
         self.listOfStocks = newListOfStocks
+        
         # Add new stocks to list
 
         #newListOfStockSymbols = []
@@ -308,9 +296,10 @@ def update_figure(n_clicks,stocksbox,dateBeginAsString,dateEndAsString):
     dateEnd = datetime(int(dateEndAsList[2]),int(dateEndAsList[0]),int(dateEndAsList[1]))
     listOfStockSymbols = stocksbox.strip('\n').split('\n')
     print(listOfStockSymbols)
-    stocks.set_dates(dateBegin = dateBegin, dateEnd = dateEnd)
+    stocks.set_dates(dateBegin = dateBegin.date(), dateEnd = dateEnd.date())
+    print("before:{} ".format(stocks.listOfStocks))
     stocks.update_list_of_stock_symbols(newListOfStockSymbols = listOfStockSymbols)
-    db()
+    print("after: {} ".format(stocks.listOfStocks))
     data = [ 
             {
                 'x': stock.time,
