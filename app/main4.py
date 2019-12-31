@@ -33,6 +33,9 @@ class Stock:
         self.vals = self.df['Adj Close'].values
         self.time = self.df.index
         self.valsNorm = self.vals/self.vals[0]
+    def norm_by_date(self,normIndex):
+        self.valsNorm = self.vals/self.vals[normIndex]
+
     def __repr__(self):
         return 'stock({},{},{})'.format(self.name,self.dateBegin,self.dateEnd)
         
@@ -102,6 +105,9 @@ class Stocks:
                     newListOfStocks.append(stock)
                     break
         self.listOfStocks = newListOfStocks        
+    def norm_by_date(self,normIndex):
+        for stock in self.listOfStocks:
+            stock.norm_by_date(normIndex)
 
 
 
@@ -152,14 +158,17 @@ dashApp.config.suppress_callback_exceptions = True
 #)
 plotButton = html.Button(id='plotstocks',n_clicks=0,children="Plot 'em!")
 
+def format_date(date):
+    return date.strftime("%m/%d/%Y")
+
 datesBox = html.Div(
         [
             html.Label('Starting Date'),
             dcc.Input(id='dateBegin',className='date',
-                value=(datetime.now()-relativedelta(years=1)).strftime("%m/%d/%Y")),
+                value=format_date(datetime.now()-relativedelta(years=1))),
             html.Label('End Date'),
             dcc.Input(id='dateEnd',className='date',
-                value=datetime.now().strftime("%m/%d/%Y")),
+                value=format_date(datetime.now())),
             ], className='pinput pretty-container'
         )
 stocksBox = html.Div(
@@ -235,7 +244,7 @@ rightPanel = html.Div(
 #        html.Div("*Past behavior does not predict future performance")
 #    ]
 #)
-def update_slider(sliderMin=10,sliderMax=40):
+def update_slider(sliderMin=1,sliderMax=4):
     slider = dcc.Slider(
         id='slider-var',
         min=sliderMin,
@@ -278,14 +287,8 @@ dashApp.layout = html.Div(
                 dcc.Input(id='slider-min',value='0'),
                 html.Label('Max'),
                 dcc.Input(id='slider-max',value='10'),
-                html.Div(id='slider-container',children=update_slider()),
-                dcc.Slider(
-                    id='norm-slider',
-                    min=0,
-                    max=100,# len(stocks.time),
-                    step=1,
-                    value=0,
-                ),
+                #html.Div(id='slider-container',children=update_slider()),
+                html.Div(id='slider-var'),
                 html.Div(id='slider-output-container')
             ]
 	)
@@ -300,27 +303,41 @@ dashApp.layout = html.Div(
 #    return 'Your stock is {}'.format(input_value)
 
 @dashApp.callback(
-    dash.dependencies.Output('slider-output-container', 'children'),
-    [dash.dependencies.Input('norm-slider', 'value')])
-def update_output(value):
-    return 'You have selected "{}"'.format(value)
+    Output('slider-output-container', 'children'),
+    [Input('norm-slider', 'value')],
+    [State('dateBegin','value'),
+     State('dateEnd'  ,'value')])
+def update_output(sliderValue,dateBeginAsString,dateEndAsString):
+    dateBegin,dateEnd = parse_dates(dateBeginAsString,dateEndAsString)
+    normDate = dateBegin + relativedelta(days=sliderValue)
+    return 'You have selected "{}"'.format(format_date(normDate))
         
 @dashApp.callback(
         Output('slider-var', 'children'),
         [Input('slider-min', 'value'),
-         Input('slider-max', 'value')]   
+         Input('slider-max', 'value')],
+        [State('dateBegin', 'value'),
+         State('dateEnd'  , 'value')]   
     )
-def update_slider(sliderMin,sliderMax):
+def update_slider(sliderMin,sliderMax,dateBeginAsString,dateEndAsString):
+    dateBegin,dateEnd = parse_dates(dateBeginAsString,dateEndAsString)
+    numberOfDays = abs((dateBegin - dateEnd).days)
+    print('totalDays is {}'.format(numberOfDays))
     slider = dcc.Slider(
         id='norm-slider',
-        min=int(sliderMin),
-        max=int(sliderMax),
+        min=0,
+        max=numberOfDays,
         step=1,
         value=0,
     )
     return slider
 
-
+def parse_dates(dateBeginAsString,dateEndAsString):
+    dateBeginAsList = dateBeginAsString.split('/')
+    dateEndAsList = dateEndAsString.split('/')
+    dateBegin = datetime(int(dateBeginAsList[2]),int(dateBeginAsList[0]),int(dateBeginAsList[1]))
+    dateEnd = datetime(int(dateEndAsList[2]),int(dateEndAsList[0]),int(dateEndAsList[1]))
+    return dateBegin,dateEnd
 
 @dashApp.callback(
         Output('main-plot'  , 'figure'),
@@ -330,17 +347,16 @@ def update_slider(sliderMin,sliderMax):
          State('dateBegin'  , 'value'),
          State('dateEnd'    , 'value')]
     )
-def update_figure(n_clicks,slider,stocksbox,dateBeginAsString,dateEndAsString):
-    dateBeginAsList = dateBeginAsString.split('/')
-    dateEndAsList = dateEndAsString.split('/')
-    dateBegin = datetime(int(dateBeginAsList[2]),int(dateBeginAsList[0]),int(dateBeginAsList[1]))
-    dateEnd = datetime(int(dateEndAsList[2]),int(dateEndAsList[0]),int(dateEndAsList[1]))
+def update_figure(n_clicks,sliderValue,stocksbox,dateBeginAsString,dateEndAsString):
+    dateBegin,dateEnd = parse_dates(dateBeginAsString,dateEndAsString)
+    normDate = dateBegin + relativedelta(days=sliderValue)
     listOfStockSymbols = stocksbox.strip('\n').split('\n')
     print(listOfStockSymbols)
     stocks.set_dates(dateBegin = dateBegin.date(), dateEnd = dateEnd.date())
     print("before:{} ".format(stocks.listOfStocks))
     stocks.update_list_of_stock_symbols(newListOfStockSymbols = listOfStockSymbols)
     print("after: {} ".format(stocks.listOfStocks))
+    stocks.norm_by_date(normIndex = sliderValue)
     data = [ 
             {
                 'x': stock.time,
