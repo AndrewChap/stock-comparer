@@ -70,6 +70,7 @@ class Stocks:
 
     def set_dates(self,dateBegin,dateEnd):
         if self.dateBegin != dateBegin and self.dateEnd != dateEnd:
+            print('setting dates!')
             self.dateBegin = dateBegin
             self.dateEnd = dateEnd
             self.listOfStocks = []
@@ -93,8 +94,16 @@ class Stocks:
             if stockSymbol not in self.listOfStockSymbols:
                 self.listOfStocks.append(Stock(name = stockSymbol, dateBegin = self.dateBegin, dateEnd = self.dateEnd))
         self.listOfStockSymbols = newListOfStockSymbols
-        #db()
-                    
+        # Correct the order
+        newListOfStocks = []
+        for stockSymbol in newListOfStockSymbols:
+            for stock in self.listOfStocks:
+                if stock.name == stockSymbol:
+                    newListOfStocks.append(stock)
+                    break
+        self.listOfStocks = newListOfStocks        
+
+
 
 stocks = Stocks()
 
