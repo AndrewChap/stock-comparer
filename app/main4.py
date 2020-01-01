@@ -49,6 +49,7 @@ class Stocks:
         self.dateEnd = dateEnd
         self.time = None
         self.listOfStocks = []
+        self.listOfStockSymbols = listOfStockSymbols
         for stockSymbol in listOfStockSymbols:
             try:
                 stock = Stock(stockSymbol,dateBegin=dateBegin,dateEnd=dateEnd)
@@ -81,22 +82,15 @@ class Stocks:
     def update_list_of_stock_symbols(self,newListOfStockSymbols):
         # Create new list from old list only if items' symbols are in input list:
         newListOfStocks = [stock for stock in self.listOfStocks if stock.name in newListOfStockSymbols]
-        print("newListOfStocks = {}".format(newListOfStocks))
-
         self.listOfStocks = newListOfStocks
-        
-        # Add new stocks to list
-
-        #newListOfStockSymbols = []
-        #
-        #for stockSymbol in self.listOfStockSymbols:
-        #    if stockSymbol not in newListOfStockSymbols:
-        #        self.listOfStocks.remove_stock(stockSymbol)
-        #        self.listOfStockSymbols.pop(stockSymbol)
+         
+        # Add new stocks to list that are not in the original list
         for stockSymbol in newListOfStockSymbols:
             if stockSymbol not in self.listOfStockSymbols:
+                print('adding stock {}'.format(stockSymbol))
                 self.listOfStocks.append(Stock(name = stockSymbol, dateBegin = self.dateBegin, dateEnd = self.dateEnd))
         self.listOfStockSymbols = newListOfStockSymbols
+
         # Correct the order
         newListOfStocks = []
         for stockSymbol in newListOfStockSymbols:
@@ -105,17 +99,22 @@ class Stocks:
                     newListOfStocks.append(stock)
                     break
         self.listOfStocks = newListOfStocks        
+
     def norm_by_date(self,normIndex):
         for stock in self.listOfStocks:
             stock.norm_by_date(normIndex)
 
 
-
-stocks = Stocks()
-
+initialStockSymbols='VTI\nBND'
+listOfStockSymbols = initialStockSymbols.strip('\n').split('\n')
 #Set start and end as one year ago to now
-endDate = datetime.now()
-dateBegin = endDate - relativedelta(years=1)
+dateEnd = datetime.now()
+dateBegin = dateEnd - relativedelta(years=1)
+stocks = Stocks(listOfStockSymbols = listOfStockSymbols, dateBegin = dateBegin.date(), dateEnd = dateEnd.date())
+#stocks.set_dates(dateBegin = dateBegin.date(), dateEnd = dateEnd.date())
+#print("before:{} ".format(stocks.listOfStocks))
+#stocks.update_list_of_stock_symbols(newListOfStockSymbols = listOfStockSymbols)
+
 
 dashApp = dash.Dash(
     __name__,
@@ -181,7 +180,7 @@ stocksBox = html.Div(
 bothbox = html.Div(
     [
         html.Label('Stocks to Plot'),
-        dcc.Textarea(id='stocksbox',autoFocus='true',className='stocksbox',rows=8,value='VTI\nBND',style={'height':'100px'}),
+        dcc.Textarea(id='stocksbox',autoFocus='true',className='stocksbox',rows=8,value=initialStockSymbols,style={'height':'100px'}),
         html.Label('Starting Date'),
         dcc.Input(id='dateBegin',className='date',
             value=(datetime.now()-relativedelta(years=1)).strftime("%m/%d/%Y")),
@@ -219,40 +218,6 @@ rightPanel = html.Div(
     ),
     className='right',
 )
-#dashApp.layout = html.Div(
-#    [
-#        html.Div(
-#            [
-#                html.Button(id='plotstocks',n_clicks=0,children='Plot them stocks!'),
-#                html.H1(
-#                    "stock-plotter.com!",
-#                    className='title',
-#                ),
-#                html.H3(
-#                    "By Andrew Chap",
-#                    className='author',
-#                )
-#            ],
-#            className = 'title-nav',
-#        ),
-#        topBar,
-#        leftPanel,
-#        rightPanel,
-#        #html.Div([stocksBox, datesBox],className='input-wrapper'),
-#        #html.Div(id='mir-div'),
-#        #dcc.Graph(id = 'main-plot'),
-#        html.Div("*Past behavior does not predict future performance")
-#    ]
-#)
-def update_slider(sliderMin=1,sliderMax=4):
-    slider = dcc.Slider(
-        id='slider-var',
-        min=sliderMin,
-        max=sliderMax,
-        step=1,
-        value=0,
-    )
-    return slider
 
 dashApp.layout = html.Div(
     [
@@ -296,12 +261,6 @@ dashApp.layout = html.Div(
 )
 
 
-#    Output(component_id='mir-div', component_property='children'),
-#    [Input(component_id='mir-input', component_property='value')]
-#)
-#def update_output_div(input_value):
-#    return 'Your stock is {}'.format(input_value)
-
 @dashApp.callback(
     Output('slider-output-container', 'children'),
     [Input('norm-slider', 'value')],
@@ -312,25 +271,6 @@ def update_output(sliderValue,dateBeginAsString,dateEndAsString):
     normDate = dateBegin + relativedelta(days=sliderValue)
     return 'You have selected "{}"'.format(format_date(normDate))
         
-@dashApp.callback(
-        Output('slider-var', 'children'),
-        [Input('slider-min', 'value'),
-         Input('slider-max', 'value')],
-        [State('dateBegin', 'value'),
-         State('dateEnd'  , 'value')]   
-    )
-def update_slider(sliderMin,sliderMax,dateBeginAsString,dateEndAsString):
-    dateBegin,dateEnd = parse_dates(dateBeginAsString,dateEndAsString)
-    numberOfDays = abs((dateBegin - dateEnd).days)
-    print('totalDays is {}'.format(numberOfDays))
-    slider = dcc.Slider(
-        id='norm-slider',
-        min=0,
-        max=numberOfDays,
-        step=1,
-        value=0,
-    )
-    return slider
 
 def parse_dates(dateBeginAsString,dateEndAsString):
     dateBeginAsList = dateBeginAsString.split('/')
@@ -371,6 +311,28 @@ def update_figure(n_clicks,sliderValue,stocksbox,dateBeginAsString,dateEndAsStri
         }
     }
 
+@dashApp.callback(
+        Output('slider-var', 'children'),
+        [Input('slider-min', 'value'),
+         Input('slider-max', 'value')],
+        [State('dateBegin', 'value'),
+         State('dateEnd'  , 'value')]   
+    )
+def update_slider(sliderMin,sliderMax,dateBeginAsString,dateEndAsString):
+    dateBegin,dateEnd = parse_dates(dateBeginAsString,dateEndAsString)
+    numberOfDays = abs((dateBegin - dateEnd).days)
+    print('totalDays is {}'.format(numberOfDays))
+    len(stocks.time)
+
+    slider = dcc.Slider(
+        id='norm-slider',
+        min=0,
+        #max=numberOfDays,
+        max=len(stocks.time),
+        step=1,
+        value=0,
+    )
+    return slider
 
 
 @server.errorhandler(500)
