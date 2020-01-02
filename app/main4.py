@@ -267,8 +267,9 @@ dashApp.layout = html.Div(
     [State('dateBegin','value'),
      State('dateEnd'  ,'value')])
 def update_output(sliderValue,dateBeginAsString,dateEndAsString):
-    dateBegin,dateEnd = parse_dates(dateBeginAsString,dateEndAsString)
-    normDate = dateBegin + relativedelta(days=sliderValue)
+    normDate = stocks.time[sliderValue]
+    #dateBegin,dateEnd = parse_dates(dateBeginAsString,dateEndAsString)
+    #normDate = dateBegin + relativedelta(days=sliderValue)
     return 'You have selected "{}"'.format(format_date(normDate))
         
 
