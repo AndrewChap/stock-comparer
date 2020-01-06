@@ -35,7 +35,6 @@ class Stock:
         self.valsNorm = self.vals/self.vals[0]
     def norm_by_date(self,normIndex):
         self.valsNorm = self.vals/self.vals[normIndex]
-
     def __repr__(self):
         return 'stock({},{},{})'.format(self.name,self.dateBegin,self.dateEnd)
         
@@ -241,25 +240,21 @@ dashApp.layout = html.Div(
                     bothbox,
                     className='leftside'),
                 html.Div(
-                    dcc.Graph(id='main-plot',style={'width':'100%'}),
+                    [
+                        dcc.Graph(id='main-plot',style={'width':'100%'}),
+                        html.Div(
+                            [
+                                html.Div(id='slider-var'),
+                                html.Div(id='slider-output-container')
+                            ]
+                        )
+                    ],
                     className='rightside'),
             ],
             className = 'contents',
         ),
-        html.Div(
-            [
-                html.Label('Min'),
-                dcc.Input(id='slider-min',value='0'),
-                html.Label('Max'),
-                dcc.Input(id='slider-max',value='10'),
-                #html.Div(id='slider-container',children=update_slider()),
-                html.Div(id='slider-var'),
-                html.Div(id='slider-output-container')
-            ]
-	)
     ]
 )
-
 
 @dashApp.callback(
     Output('slider-output-container', 'children'),
@@ -270,8 +265,7 @@ def update_output(sliderValue,dateBeginAsString,dateEndAsString):
     normDate = stocks.time[sliderValue]
     #dateBegin,dateEnd = parse_dates(dateBeginAsString,dateEndAsString)
     #normDate = dateBegin + relativedelta(days=sliderValue)
-    return 'You have selected "{}"'.format(format_date(normDate))
-        
+    return 'Normalization date: {}'.format(format_date(normDate))
 
 def parse_dates(dateBeginAsString,dateEndAsString):
     dateBeginAsList = dateBeginAsString.split('/')
@@ -291,6 +285,7 @@ def parse_dates(dateBeginAsString,dateEndAsString):
 def update_figure(n_clicks,sliderValue,stocksbox,dateBeginAsString,dateEndAsString):
     dateBegin,dateEnd = parse_dates(dateBeginAsString,dateEndAsString)
     normDate = dateBegin + relativedelta(days=sliderValue)
+    normDate = stocks.time[sliderValue]
     listOfStockSymbols = stocksbox.strip('\n').split('\n')
     print(listOfStockSymbols)
     stocks.set_dates(dateBegin = dateBegin.date(), dateEnd = dateEnd.date())
@@ -305,21 +300,32 @@ def update_figure(n_clicks,sliderValue,stocksbox,dateBeginAsString,dateEndAsStri
                 'name': stock.name,
             } for stock in stocks.listOfStocks
         ]
+    maxY = max([max(stock.valsNorm) for stock in stocks.listOfStocks])
+    minY = min([min(stock.valsNorm) for stock in stocks.listOfStocks])
+    data.append(
+            {
+                'x': [normDate, normDate],
+                'y': [minY, maxY],
+                'mode': 'lines',
+                'line': {'color': 'rgba(0,0,0,0.18)'},
+                'showlegend': False,
+            }
+    )
     return {
         'data': data,
         'layout': {
-            'margin': {'t': 30, 'b': 30},
+            'yaxis': {'range': [minY,maxY]},
+            'margin': {'l': 40, 'r': 40, 't': 30, 'b': 30},
         }
     }
 
 @dashApp.callback(
         Output('slider-var', 'children'),
-        [Input('slider-min', 'value'),
-         Input('slider-max', 'value')],
+        [Input('plotstocks' , 'n_clicks')],
         [State('dateBegin', 'value'),
          State('dateEnd'  , 'value')]   
     )
-def update_slider(sliderMin,sliderMax,dateBeginAsString,dateEndAsString):
+def update_slider(n_clicks,dateBeginAsString,dateEndAsString):
     dateBegin,dateEnd = parse_dates(dateBeginAsString,dateEndAsString)
     numberOfDays = abs((dateBegin - dateEnd).days)
     print('totalDays is {}'.format(numberOfDays))
@@ -329,7 +335,7 @@ def update_slider(sliderMin,sliderMax,dateBeginAsString,dateEndAsString):
         id='norm-slider',
         min=0,
         #max=numberOfDays,
-        max=len(stocks.time),
+        max=len(stocks.time)-1,
         step=1,
         value=0,
     )
