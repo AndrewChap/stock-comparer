@@ -120,8 +120,32 @@ dashApp = dash.Dash(
     server=server,
     #routes_pathname_prefix='/dash/'
 )
+dashApp.index_string = '''
+<!DOCTYPE html>
+<html>
+    <head>
+        <script data-ad-client="ca-pub-5585892045097111" async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+        {%metas%}
+        <title>{%title%}</title>
+        {%favicon%}
+        {%css%}
+    </head>
+    <body>
+        {%app_entry%}
+        <footer>
+            {%config%}
+            {%scripts%}
+            {%renderer%}
+        </footer>
+    </body>
+</html>
+'''
+
+
 dashApp.scripts.config.serve_locally = True
 dashApp.config.suppress_callback_exceptions = True
+
+
 plotButton = html.Button(id='plotstocks',n_clicks=0,children="Plot 'em!")
 
 def format_date(date):
