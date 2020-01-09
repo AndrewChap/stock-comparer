@@ -193,8 +193,9 @@ bothbox = html.Div(
 topBar = html.Div(
             [
                 #html.Button(id='plotstocks',n_clicks=0,children='Plot them stocks!'),
+                html.Img(src='/assets/splogo.png'),
                 html.H1(
-                    "stock-plotter.com!",
+                    "stoock-plotter.com!",
                     className='title',
                 ),
                 html.H3(
@@ -225,6 +226,7 @@ dashApp.layout = html.Div(
                 html.Div(
                     [
                         #html.Button(id='plotstocks',n_clicks=0,children='Plot them stocks!'),
+                        html.Img(src='/assets/splogo.png', style={'width':'40px'}),
                         html.H1(
                             "stock-plotter.com!",
                             className='title',
