@@ -72,12 +72,16 @@ class Stocks:
                 self.time = self.time + othertime[index:]
 
     def set_dates(self,dateBegin,dateEnd):
-        if self.dateBegin != dateBegin and self.dateEnd != dateEnd:
+        if (self.dateBegin != dateBegin) or (self.dateEnd != dateEnd):
             print('setting dates!')
             self.dateBegin = dateBegin
             self.dateEnd = dateEnd
             self.listOfStocks = []
             self.listOfStockSymbols = []
+        else:
+            print('dateBegin = {}'.format(dateBegin))
+            print('self.dateBegin = {}'.format(self.dateBegin))
+            print('NO NEED TO SET')
     def update_list_of_stock_symbols(self,newListOfStockSymbols):
         # Create new list from old list only if items' symbols are in input list:
         newListOfStocks = [stock for stock in self.listOfStocks if stock.name in newListOfStockSymbols]
@@ -256,6 +260,7 @@ def update_figure(n_clicks,sliderValue,stocksbox,dateBeginAsString,dateEndAsStri
     normDate = stocks.time[sliderValue]
     listOfStockSymbols = stocksbox.strip('\n').split('\n')
     print(listOfStockSymbols)
+
     stocks.set_dates(dateBegin = dateBegin.date(), dateEnd = dateEnd.date())
     print("before:{} ".format(stocks.listOfStocks))
     stocks.update_list_of_stock_symbols(newListOfStockSymbols = listOfStockSymbols)
