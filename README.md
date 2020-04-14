@@ -14,3 +14,4 @@ Also made a Jupyter notebook for comparing a few different stocks.  Get the [Sto
 * Make ENTER always redraw the plot
 * Add tool-tips
 * Add help page
+* Get Google Ads on page
