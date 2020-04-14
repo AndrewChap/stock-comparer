@@ -15,6 +15,7 @@ import pandas_datareader.data as web
 from pandas import Series, DataFrame
 # Datetime for dealing with stock dates
 from datetime import datetime
+import datetime as dt
 from dateutil.relativedelta import relativedelta
 # pdb for debugging
 import pdb
@@ -192,8 +193,15 @@ bothbox = html.Div(
         html.Label('Stocks to Plot'),
         dcc.Textarea(id='stocksbox',autoFocus='true',className='stocksbox',rows=8,value=initialStockSymbols,style={'height':'100px'}),
         html.Label('Starting Date'),
-        dcc.Input(id='dateBegin',className='date',
-            value=(datetime.now()-relativedelta(years=1)).strftime("%m/%d/%Y")),
+        dcc.DatePickerSingle(
+            id='dateBegin',
+            className='date',
+            month_format='MMMM Y',
+            placeholder='MMMM Y',
+            date=(datetime.now()-relativedelta(years=1)).date(),
+        ),
+        #dcc.Input(id='dateBegin',className='date',
+        #    value=(datetime.now()-relativedelta(years=1)).strftime("%m/%d/%Y")),
         html.Label('End Date'),
         dcc.Input(id='dateEnd',className='date',
             value=datetime.now().strftime("%m/%d/%Y")),
@@ -245,17 +253,21 @@ def parse_dates(dateAsString):
     dateAsList = dateAsString.split('/')
     date = datetime(int(dateAsList[2]),int(dateAsList[0]),int(dateAsList[1]))
     return date
+def parse_dates2(dateAsString):
+    dateAsList = dateAsString.split('-')
+    date = datetime(int(dateAsList[0]),int(dateAsList[1]),int(dateAsList[2]))
+    return date
 
 @dashApp.callback(
         Output('main-plot'  , 'figure'),
         [Input('plotstocks' , 'n_clicks')],
         [State('stocksbox'  , 'value'),
-         State('dateBegin'  , 'value'),
+         State('dateBegin'  , 'date'),
          State('dateEnd'    , 'value'),
          State('dateNorm'   , 'value')]
     )
 def update_figure(n_clicks,stocksbox,dateBeginAsString,dateEndAsString,dateNormAsString):
-    dateBegin = parse_dates(dateBeginAsString)
+    dateBegin = parse_dates2(dateBeginAsString)
     dateEnd = parse_dates(dateEndAsString)
     dateNorm = parse_dates(dateNormAsString) if dateNormAsString != '' else dateBegin
     listOfStockSymbols = stocksbox.strip('\n').split('\n')
