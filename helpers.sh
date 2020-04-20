@@ -5,8 +5,9 @@
 #    cd /home/amchap06/github/mortgagetvm/mortgagetvm
 #}
 function c(){
-    echo vi app/assets/3_stock.css
-    vi app/assets/3_stock.css
+    main=$(switchmain $1)
+    echo code $main
+    code $main
 }
 # helper function to vim app
 function v(){
