@@ -192,16 +192,16 @@ bothbox = html.Div(
     [
         html.Label('Stocks to Plot'),
         dcc.Textarea(id='stocksbox',autoFocus='true',className='stocksbox',rows=8,value=initialStockSymbols,style={'height':'100px'}),
-        html.Label('Starting Date'),
-        dcc.DatePickerSingle(
-            id='dateBegin',
-            className='date',
-            month_format='MMMM Y',
-            placeholder='MMMM Y',
-            date=(datetime.now()-relativedelta(years=1)).date(),
-        ),
-        #dcc.Input(id='dateBegin',className='date',
-        #    value=(datetime.now()-relativedelta(years=1)).strftime("%m/%d/%Y")),
+        html.Label('Start Date'),
+        #dcc.DatePickerSingle(
+        #    id='dateBegin',
+        #    className='date',
+        #    month_format='MMMM Y',
+        #    placeholder='MMMM Y',
+        #    date=(datetime.now()-relativedelta(years=1)).date(),
+        #),
+        dcc.Input(id='dateBegin',className='date',
+            value=(datetime.now()-relativedelta(years=1)).strftime("%m/%d/%Y")),
         html.Label('End Date'),
         dcc.Input(id='dateEnd',className='date',
             value=datetime.now().strftime("%m/%d/%Y")),
@@ -262,12 +262,12 @@ def parse_dates2(dateAsString):
         Output('main-plot'  , 'figure'),
         [Input('plotstocks' , 'n_clicks')],
         [State('stocksbox'  , 'value'),
-         State('dateBegin'  , 'date'),
+         State('dateBegin'  , 'value'),
          State('dateEnd'    , 'value'),
          State('dateNorm'   , 'value')]
     )
 def update_figure(n_clicks,stocksbox,dateBeginAsString,dateEndAsString,dateNormAsString):
-    dateBegin = parse_dates2(dateBeginAsString)
+    dateBegin = parse_dates(dateBeginAsString)
     dateEnd = parse_dates(dateEndAsString)
     dateNorm = parse_dates(dateNormAsString) if dateNormAsString != '' else dateBegin
     listOfStockSymbols = stocksbox.strip('\n').split('\n')
