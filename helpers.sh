@@ -4,7 +4,7 @@ FLASK_APP="app/main.py"
 
 main="app/main.py"
 # helper function to open app in vscode
-function c(){
+function cm(){
     echo code $main
     code $main
 }
