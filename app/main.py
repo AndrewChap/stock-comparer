@@ -1,3 +1,5 @@
+TESTING = True
+
 import logging
 from flask import Flask
 
@@ -8,10 +10,9 @@ import dash_html_components as html
 from dash.dependencies import Input, Output, State
 # Numpy for arrays
 import numpy as np
-# Pandas for reading stocks
-import pandas as pd
-import pandas_datareader
-import pandas_datareader.data as web
+
+import yfinance as yf
+
 from pandas import Series, DataFrame
 # Datetime for dealing with stock dates
 from datetime import datetime
@@ -30,8 +31,10 @@ class Stock:
         self.name = name
         self.dateBegin = dateBegin
         self.dateEnd = dateEnd
-        self.df = web.DataReader(self.name, 'yahoo', dateBegin, dateEnd)
-        self.vals = self.df['Adj Close'].values
+        #self.df = pdr.get_data_yahoo(self.name, dateBegin, dateEnd)
+        self.ticker = yf.Ticker(self.name)
+        self.df = self.ticker.history(period='1d', start=dateBegin, end=dateEnd)
+        self.vals = self.df['Close'].values
         self.time = self.df.index
         self.valsNorm = self.vals/self.vals[0]
     def norm_by_index(self,normIndex):
@@ -168,38 +171,11 @@ plotButton = html.Button(id='plotstocks',n_clicks=0,children="Plot 'em!")
 def format_date(date):
     return date.strftime("%m/%d/%Y")
 
-datesBox = html.Div(
-        [
-            html.Label('Starting Date!'),
-            dcc.Input(id='dateBegin',className='date',
-                value=format_date(datetime.now()-relativedelta(years=1))),
-            html.Label('End Date'),
-            dcc.Input(id='dateEnd',className='date',
-                value=format_date(datetime.now())),
-            html.Label('Normalization Date'),
-            dcc.Input(id='dateNorm',className='date',
-                value='') #format_date(datetime.now())),
-        ], className='pinput pretty-container'
-        )
-stocksBox = html.Div(
-        [
-            html.Label('Stocks to Plot'),
-            dcc.Textarea(id='stocksbox',autoFocus='true',className='stocksbox',value='VTI\nBND'),
-        ], className='pinput pretty-container'
-)
-
 bothbox = html.Div(
     [
         html.Label('Stocks to Plot'),
         dcc.Textarea(id='stocksbox',autoFocus='true',className='stocksbox',rows=8,value=initialStockSymbols,style={'height':'100px'}),
         html.Label('Start Date'),
-        #dcc.DatePickerSingle(
-        #    id='dateBegin',
-        #    className='date',
-        #    month_format='MMMM Y',
-        #    placeholder='MMMM Y',
-        #    date=(datetime.now()-relativedelta(years=1)).date(),
-        #),
         dcc.Input(id='dateBegin',className='date',
             value=(datetime.now()-relativedelta(years=1)).strftime("%m/%d/%Y")),
         html.Label('End Date'),
