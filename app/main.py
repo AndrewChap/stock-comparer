@@ -166,27 +166,63 @@ dashApp.scripts.config.serve_locally = True
 dashApp.config.suppress_callback_exceptions = True
 
 
-plotButton = html.Button(id='plotstocks',n_clicks=0,children="Plot 'em!")
+plotButton = html.Button(id='plotstocks',className='plotButton',
+    n_clicks=0,children="Replot")
 
 def format_date(date):
     return date.strftime("%m/%d/%Y")
 
+def add_explanation(obj, text=""):
+    """ add hover-explanation on mouse-over for objects, automatic for dropdowns """
+    if (not text):
+        try:
+            title = obj.placeholder
+        except:
+            title = "??"
+    return html.Abbr(obj, title=title)
+
+add_explanation(
+    dcc.Dropdown(
+        placeholder="Select your desired elements",
+        id="sample_element",
+        options=['a','b','c']
+    )
+)
+
+def tooltip(text):
+    return html.Div(['?',
+            html.Span(text,className='tooltiptext')],
+            className="tooltip")
+
+def tooltip_label(label,tip):
+    return html.Label([
+            html.Div(label,className='leftLabel'),
+            html.Div(['?',
+                html.Span(tip,className='tooltiptext')],
+                className="tooltip")
+            ],
+            className='inputLabel')
+
 bothbox = html.Div(
     [
-        html.Label('Stocks to Plot'),
-        dcc.Textarea(id='stocksbox',autoFocus='true',className='stocksbox',rows=8,value=initialStockSymbols,style={'height':'100px'}),
-        html.Label('Start Date'),
+        tooltip_label('Stocks','List of stocks to plot'),
+        dcc.Textarea(id='stocksbox',autoFocus='true',
+            className='box',
+            rows=8,
+            value=initialStockSymbols),
+        tooltip_label('Start Date','Date on the left side of the plot'),
         dcc.Input(id='dateBegin',className='date',
             value=(datetime.now()-relativedelta(years=1)).strftime("%m/%d/%Y")),
-        html.Label('End Date'),
+        tooltip_label('End Date','Date on the right side of the plot'),
         dcc.Input(id='dateEnd',className='date',
             value=datetime.now().strftime("%m/%d/%Y")),
-        html.Label('Norm Date'),
+        tooltip_label('Norm Date','Normalization date: the date at which all stocks have a relative value of 1.0'),
         dcc.Input(id='dateNorm',className='date',
             value=''),
-        plotButton,
+        html.Div(plotButton)
     ], className='pinput pretty-container'
 )
+# https://dash.plotly.com/dash-daq/colorpicker
 
 # https://stackoverflow.com/questions/1260122/expand-a-div-to-fill-the-remaining-width
 # Right panel: the output plot
