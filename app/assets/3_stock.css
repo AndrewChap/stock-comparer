@@ -89,17 +89,17 @@ h5{
   /*background-color: #F0D6FF !important;*/
   width: 100px;
   text-align: left;
-  border: none;
 }
 .inputLabel{
   /*background-color: #B086DF;*/
   color: #777;
   /*font-variant: small-caps;*/
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 700;
   text-align: left;
-  margin: 5px 8px 2px 8px;
+  margin: 5px 8px 4px 8px;
   border-bottom: 1px solid #AAA;
+  padding-bottom: 5px;
 }
 .box{
   height: 120px;
@@ -114,16 +114,17 @@ h5{
   background-color: #BCDBEA;*/
   /*position: absolute;*/
   color: white;
-  top: -200px;
+  /*top: -200px;*/
   /*left: 80px;*/
   text-align: center;
   background-color: #ACBBCA;
   border-radius: 50%;
-  width: 18px;
-  height: 18px;
+  width: 16px;
+  height: 16px;
   font-size: 10px;
-  line-height: 20px;
+  line-height: 18px;
   margin-left: 80px;
+  /*margin-top: -10px;*/
   /*cursor: default;*/
 }
 
@@ -204,7 +205,11 @@ h5{
 }
 
 .plotButton{
-  
+  background-color: #55D0FF;
+  color: white;
+  border-radius: 20px;
+  border: none;
+  padding: 0 20px;
 }
 
 /* Buttons

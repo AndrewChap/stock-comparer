@@ -167,7 +167,7 @@ dashApp.config.suppress_callback_exceptions = True
 
 
 plotButton = html.Button(id='plotstocks',className='plotButton',
-    n_clicks=0,children="Replot")
+    n_clicks=0,children="re-plot")
 
 def format_date(date):
     return date.strftime("%m/%d/%Y")
