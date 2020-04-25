@@ -27,18 +27,28 @@ server = Flask(__name__)
 
 # Create stock objects
 class Stock:
-    def __init__(self,name,dateBegin,dateEnd):
+    def __init__(self,name,dateBegin,dateEnd,compartor=None):
         self.name = name
         self.dateBegin = dateBegin
         self.dateEnd = dateEnd
+        self.comparator = compartor
         #self.df = pdr.get_data_yahoo(self.name, dateBegin, dateEnd)
         self.ticker = yf.Ticker(self.name)
         self.df = self.ticker.history(period='1d', start=dateBegin, end=dateEnd)
         self.vals = self.df['Close'].values
         self.time = self.df.index
-        self.valsNorm = self.vals/self.vals[0]
+        if comparator:
+            self.valsCompared = [v/n for v,n in zip(self.vals,comparator.valsNorm)]
+        else:
+            self.valsCompared = self.vals 
+        self.valsNorm = self.valsCompared/self.vals[0]
+        self.set_comparator(comparator)
+        self.norm_by_index(0)
+        
     def norm_by_index(self,normIndex):
-        self.valsNorm = self.vals/self.vals[normIndex]
+        self.valsNorm = self.valsCompared/self.valsCompared[normIndex]
+    def set_comparator(self,compator):
+        pass
     def norm_by_date(self,dateNorm):
         dates = [ind.to_pydatetime() for ind in self.df.index]
         # Find closest date to the input date
@@ -205,11 +215,14 @@ def tooltip_label(label,tip):
 
 bothbox = html.Div(
     [
-        tooltip_label('Stocks','List of stocks to plot'),
+        tooltip_label('Stocks','List of stocks tickers to plot'),
         dcc.Textarea(id='stocksbox',autoFocus='true',
             className='box',
             rows=8,
             value=initialStockSymbols),
+        tooltip_label('Comparator','Stock performance to plot relative to'),
+        dcc.Input(id='compartor',className='date',
+            value=''),
         tooltip_label('Start Date','Date on the left side of the plot'),
         dcc.Input(id='dateBegin',className='date',
             value=(datetime.now()-relativedelta(years=1)).strftime("%m/%d/%Y")),
