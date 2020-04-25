@@ -12,6 +12,6 @@ Also made a Jupyter notebook for comparing a few different stocks.  Get the [Sto
 * Make original logo
 * Comparator stock field
 * Make ENTER always redraw the plot
-* Add tool-tips
 * Add help page
 * Get Google Ads on page
+* Add buttons for "Help", "Examples", "GitHub"
