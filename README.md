@@ -16,3 +16,4 @@ Also made a Jupyter notebook for comparing a few different stocks.  Get the [Sto
 * Get Google Ads on page
 * Add buttons for "Help", "Examples", "GitHub"
 * When there is bad input, make it red and pop up text that says so
+* Checkbox to make it a semilog-y plot
