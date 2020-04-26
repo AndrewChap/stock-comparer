@@ -10,7 +10,6 @@ Also made a Jupyter notebook for comparing a few different stocks.  Get the [Sto
 
 ## To-Do's
 * Make original logo
-* Comparator stock field
 * Make ENTER always redraw the plot
 * Add help page
 * Get Google Ads on page
