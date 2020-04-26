@@ -1,5 +1,3 @@
-TESTING = True
-
 import logging
 from flask import Flask
 
