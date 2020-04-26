@@ -264,7 +264,16 @@ rightPanel = html.Div(
 titleNav = html.Div(
     [
         html.Img(src='/assets/splogo.png', style={'width':'40px'}),
-        html.H1("stock-plotter.com!", className='title',),
+        html.Button('Help'),
+        html.Button('Examples'),
+        html.A(
+            html.Img(
+                src='/assets/github.png',
+                style={'opacity':'0.8','width':'80px'}
+            ),
+            href='https://github.com/AndrewChap/stock-comparer'
+        ),
+        html.H2("stock-plotter.com!", className='title',),
         html.H3("By Andrew Chap", className='author',)
     ],
     className = 'title-nav',
