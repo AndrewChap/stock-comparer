@@ -47,6 +47,8 @@ class Stock:
             self.valsCompared = [v/n for v,n in zip(self.valsNorm,comparator.valsNorm)]
         else:
             self.valsCompared = self.valsNorm
+    def remove_comparator(self):
+        self.valsCompared = self.valsNorm
 
     def norm_by_date(self,dateNorm):
         dates = [ind.to_pydatetime() for ind in self.df.index]
@@ -130,11 +132,15 @@ class Stocks:
 
     def update_comparators(self,comparatorName):
         if self.comparatorName != comparatorName:
-            self.comparatorName = comparatorName
-            # Create a new stock for the comparator.  Note that the comparator itself cannot *have* a comparator
-            self.comparator = Stock(name=comparatorName,dateBegin=self.dateBegin,dateEnd=self.dateEnd,comparator=None)
-            for stock in self.listOfStocks:
-                stock.update_comparator(self.comparator)
+            if comparatorName == '':
+                for stock in self.listOfStocks:
+                    stock.remove_comparator()
+            else:
+                self.comparatorName = comparatorName
+                # Create a new stock for the comparator.  Note that the comparator itself cannot *have* a comparator
+                self.comparator = Stock(name=comparatorName,dateBegin=self.dateBegin,dateEnd=self.dateEnd,comparator=None)
+                for stock in self.listOfStocks:
+                    stock.update_comparator(self.comparator)
 
     #def norm_by_index(self,normIndex):
     #    for stock in self.listOfStocks:
@@ -231,7 +237,7 @@ bothbox = html.Div(
             value=initialStockSymbols),
         tooltip_label('Comparator','Stock performance to plot relative to'),
         dcc.Input(id='comparator',className='date',
-            value='VTI'),
+            value=''),
         tooltip_label('Start Date','Date on the left side of the plot'),
         dcc.Input(id='dateBegin',className='date',
             value=(datetime.now()-relativedelta(years=1)).strftime("%m/%d/%Y")),
