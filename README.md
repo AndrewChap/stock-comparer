@@ -15,3 +15,4 @@ Also made a Jupyter notebook for comparing a few different stocks.  Get the [Sto
 * Add help page
 * Get Google Ads on page
 * Add buttons for "Help", "Examples", "GitHub"
+* When there is bad input, make it red and pop up text that says so
