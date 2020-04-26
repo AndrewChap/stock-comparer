@@ -27,28 +27,27 @@ server = Flask(__name__)
 
 # Create stock objects
 class Stock:
-    def __init__(self,name,dateBegin,dateEnd,compartor=None):
+    def __init__(self,name,dateBegin,dateEnd,comparator=None):
         self.name = name
         self.dateBegin = dateBegin
         self.dateEnd = dateEnd
-        self.comparator = compartor
+        self.comparator = comparator
         #self.df = pdr.get_data_yahoo(self.name, dateBegin, dateEnd)
         self.ticker = yf.Ticker(self.name)
         self.df = self.ticker.history(period='1d', start=dateBegin, end=dateEnd)
         self.vals = self.df['Close'].values
         self.time = self.df.index
-        if comparator:
-            self.valsCompared = [v/n for v,n in zip(self.vals,comparator.valsNorm)]
-        else:
-            self.valsCompared = self.vals 
-        self.valsNorm = self.valsCompared/self.vals[0]
-        self.set_comparator(comparator)
         self.norm_by_index(0)
+        self.update_comparator(comparator) # if comparator is None, this just sets valsCompared=valsNorm
         
     def norm_by_index(self,normIndex):
-        self.valsNorm = self.valsCompared/self.valsCompared[normIndex]
-    def set_comparator(self,compator):
-        pass
+        self.valsNorm = self.vals/self.vals[normIndex]
+    def update_comparator(self,comparator):
+        if comparator:
+            self.valsCompared = [v/n for v,n in zip(self.valsNorm,comparator.valsNorm)]
+        else:
+            self.valsCompared = self.valsNorm
+
     def norm_by_date(self,dateNorm):
         dates = [ind.to_pydatetime() for ind in self.df.index]
         # Find closest date to the input date
@@ -61,7 +60,8 @@ class Stock:
         # Only needed if we wanted to return what date we are actually norming on
         if normIndex == 0:
             dateNorm = dates[0]
-        self.valsNorm = self.vals/self.vals[normIndex]
+        self.norm_by_index(normIndex)
+        #self.valsNorm = self.vals/self.vals[normIndex]
     def __repr__(self):
         return 'stock({},{},{})'.format(self.name,self.dateBegin,self.dateEnd)
         
@@ -70,19 +70,18 @@ class Stocks:
         self,
         listOfStockSymbols = [],
         dateBegin = datetime.now() - relativedelta(years=1),
-        dateEnd = datetime.now()):
+        dateEnd = datetime.now()
+    ):
         self.dateBegin = dateBegin
         self.dateEnd = dateEnd
         self.time = None
+        self.comparatorName = ''
         self.listOfStocks = []
         self.listOfStockSymbols = listOfStockSymbols
         for stockSymbol in listOfStockSymbols:
-            try:
-                stock = Stock(stockSymbol,dateBegin=dateBegin,dateEnd=dateEnd)
-                self.listOfStocks.append(stock)
-                self.set_global_time(othertime = stock.time)
-            except pandas_datareader._utils.RemoteDataError as e:
-                print(e)
+            stock = Stock(stockSymbol,dateBegin=dateBegin,dateEnd=dateEnd)
+            self.listOfStocks.append(stock)
+            self.set_global_time(othertime = stock.time)
     def set_global_time(self,othertime):
         if self.time is None:
             self.time = othertime
@@ -104,6 +103,8 @@ class Stocks:
             self.dateEnd = dateEnd
             self.listOfStocks = []
             self.listOfStockSymbols = []
+            self.comparator = None
+            self.comparatorName = ''
         else:
             pass
     def update_list_of_stock_symbols(self,newListOfStockSymbols):
@@ -127,9 +128,17 @@ class Stocks:
                     break
         self.listOfStocks = newListOfStocks        
 
-    def norm_by_index(self,normIndex):
-        for stock in self.listOfStocks:
-            stock.norm_by_index(normIndex)
+    def update_comparators(self,comparatorName):
+        if self.comparatorName != comparatorName:
+            self.comparatorName = comparatorName
+            # Create a new stock for the comparator.  Note that the comparator itself cannot *have* a comparator
+            self.comparator = Stock(name=comparatorName,dateBegin=self.dateBegin,dateEnd=self.dateEnd,comparator=None)
+            for stock in self.listOfStocks:
+                stock.update_comparator(self.comparator)
+
+    #def norm_by_index(self,normIndex):
+    #    for stock in self.listOfStocks:
+    #        stock.norm_by_index(normIndex)
     def norm_by_date(self,dateNorm):
         for stock in self.listOfStocks:
             stock.norm_by_date(dateNorm)
@@ -221,8 +230,8 @@ bothbox = html.Div(
             rows=8,
             value=initialStockSymbols),
         tooltip_label('Comparator','Stock performance to plot relative to'),
-        dcc.Input(id='compartor',className='date',
-            value=''),
+        dcc.Input(id='comparator',className='date',
+            value='VTI'),
         tooltip_label('Start Date','Date on the left side of the plot'),
         dcc.Input(id='dateBegin',className='date',
             value=(datetime.now()-relativedelta(years=1)).strftime("%m/%d/%Y")),
@@ -287,28 +296,30 @@ def parse_dates2(dateAsString):
         Output('main-plot'  , 'figure'),
         [Input('plotstocks' , 'n_clicks')],
         [State('stocksbox'  , 'value'),
+         State('comparator' , 'value'),
          State('dateBegin'  , 'value'),
          State('dateEnd'    , 'value'),
          State('dateNorm'   , 'value')]
     )
-def update_figure(n_clicks,stocksbox,dateBeginAsString,dateEndAsString,dateNormAsString):
+def update_figure(n_clicks,stocksbox,comparatorName,dateBeginAsString,dateEndAsString,dateNormAsString):
     dateBegin = parse_dates(dateBeginAsString)
     dateEnd = parse_dates(dateEndAsString)
     dateNorm = parse_dates(dateNormAsString) if dateNormAsString != '' else dateBegin
     listOfStockSymbols = stocksbox.strip('\n').split('\n')
     stocks.set_dates(dateBegin = dateBegin.date(), dateEnd = dateEnd.date())
     stocks.update_list_of_stock_symbols(newListOfStockSymbols = listOfStockSymbols)
+    stocks.update_comparators(comparatorName)
     #stocks.norm_by_index(normIndex = sliderValue)
     stocks.norm_by_date(dateNorm = dateNorm)
     data = [ 
             {
                 'x': stock.time,
-                'y': stock.valsNorm,
+                'y': stock.valsCompared,
                 'name': stock.name,
             } for stock in stocks.listOfStocks
         ]
-    maxY = max([max(stock.valsNorm) for stock in stocks.listOfStocks])
-    minY = min([min(stock.valsNorm) for stock in stocks.listOfStocks])
+    maxY = max([max(stock.valsCompared) for stock in stocks.listOfStocks])
+    minY = min([min(stock.valsCompared) for stock in stocks.listOfStocks])
     data.append(
             {
                 'x': [dateNorm, dateNorm],
