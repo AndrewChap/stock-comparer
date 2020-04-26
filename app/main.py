@@ -163,6 +163,7 @@ dashApp = dash.Dash(
     server=server,
     #routes_pathname_prefix='/dash/'
 )
+dashApp.title = 'Stock Plotter'
 dashApp.index_string = '''
 <!DOCTYPE html>
 <html>
