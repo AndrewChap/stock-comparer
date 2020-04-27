@@ -89,6 +89,7 @@ h5{
   /*background-color: #F0D6FF !important;*/
   width: 100px;
   text-align: left;
+  border-left: 1px #888;
 }
 .inputLabel{
   /*background-color: #B086DF;*/
@@ -204,12 +205,23 @@ h5{
   /*border: None;*/
 }
 
+.topButton{
+  color: white;
+  border-width: 1px;
+  border-style: solid;
+  border-radius: 20px !important;
+  border-color: white !important;
+  padding: 5px 15px;
+  margin-left: 20px;
+}
+
 .plotButton{
   background-color: #55D0FF;
   color: white;
   border-radius: 20px;
   border: none;
   padding: 0 20px;
+  margin-top: 20px;
 }
 
 /* Buttons
