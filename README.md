@@ -16,3 +16,4 @@ Also made a Jupyter notebook for comparing a few different stocks.  Get the [Sto
 * Add buttons for "Help", "Examples", "GitHub"
 * When there is bad input, make it red and pop up text that says so
 * Checkbox to make it a semilog-y plot
+* Add in calendar selector for dates (Dash's DatePicker doesn't seem to work well, so look into getting another tool into Dash)
