@@ -263,16 +263,19 @@ rightPanel = html.Div(
 
 titleNav = html.Div(
     [
-        html.Img(src='/assets/splogo.png', style={'width':'40px'}),
-        html.A('Help',className='topButton',
+        html.A(
+            html.Img(src='/assets/splogo.png', style={'width':'40px'}),
+            href='/'
+        ),
+        dcc.Link('Help',className='topButton',
             href='/help'
         ),
         html.A('Examples',className='topButton',
-            href='https://github.com/AndrewChap/stock-comparer'
+            href='/examples'
         ),
         html.H2("Stock Plotter", className='title',),
         html.A('About',className='topButton',
-            href='https://github.com/AndrewChap/stock-comparer'
+            href='/about'
         ),
         html.A('Contact',className='topButton',
             href='mailto:andrew@andrewchap.com'
@@ -283,7 +286,8 @@ titleNav = html.Div(
                 style={'opacity':'0.8','width':'25px'}
             ),
             className = 'author',
-            href='https://github.com/AndrewChap/stock-comparer'
+            href='https://github.com/AndrewChap/stock-comparer',
+            target='_blank'
         )
     ],
     className = 'title-nav',
@@ -321,9 +325,22 @@ def parse_dates2(dateAsString):
 @dashApp.callback(Output('page-content', 'children'),
                  [Input('url', 'pathname')])
 def display_page(pathname):
-    return html.Div([
-        html.H3('You are on page {}'.format(pathname))
-    ])
+    if pathname == '/':
+        return html.Div([
+            html.H3('You are on the main page')
+        ])
+    elif pathname == '/help':
+        return html.Div([
+            html.H3('You have reached the help page')
+        ])
+    elif pathname == '/examples':
+        return html.Div([
+            html.H3('Examples be here')
+        ])
+    elif pathname == '/about':
+        return html.Div([
+            html.H3('About this page')
+        ])
 
 
 @dashApp.callback(
