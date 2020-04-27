@@ -265,7 +265,7 @@ titleNav = html.Div(
     [
         html.Img(src='/assets/splogo.png', style={'width':'40px'}),
         html.A('Help',className='topButton',
-            href='https://github.com/AndrewChap/stock-comparer'
+            href='/help'
         ),
         html.A('Examples',className='topButton',
             href='https://github.com/AndrewChap/stock-comparer'
@@ -291,6 +291,7 @@ titleNav = html.Div(
 
 dashApp.layout = html.Div(
     [
+        dcc.Location(id='url', refresh=False),
         html.Div(
             [
                 titleNav,
@@ -303,6 +304,7 @@ dashApp.layout = html.Div(
             ],
             className = 'contents',
         ),
+        html.Div(id='page-content')
     ]
 )
 
@@ -315,6 +317,14 @@ def parse_dates2(dateAsString):
     dateAsList = dateAsString.split('-')
     date = datetime(int(dateAsList[0]),int(dateAsList[1]),int(dateAsList[2]))
     return date
+
+@dashApp.callback(Output('page-content', 'children'),
+                 [Input('url', 'pathname')])
+def display_page(pathname):
+    return html.Div([
+        html.H3('You are on page {}'.format(pathname))
+    ])
+
 
 @dashApp.callback(
         Output('main-plot'  , 'figure'),
