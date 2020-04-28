@@ -18,10 +18,11 @@ h1{
 .title{
   font-size: 14px;
   color: white;
-  color: #DEF;
+  /*color: #DEF;*/
+  font-weight: 300;
   margin: 0;
   font-family: Cambria, Cochin, Georgia, Times, 'Times New Roman', serif;
-  letter-spacing: 1px;
+  letter-spacing: 1.2px;
 }
 .subtitle{
   font-size: 8px;
