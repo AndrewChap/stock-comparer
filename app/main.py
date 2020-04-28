@@ -1,4 +1,3 @@
-# Bug: when changing the norm date, you have to click replot twice
 # VTXVX VTWNX VTTVX VTHRX VTTHX VFORX VTIVX VFIFX VFFVX VTTSX VLXVX
 import logging
 from flask import Flask
@@ -28,7 +27,7 @@ server = Flask(__name__)
 # Create stock objects
 class Stock:
     def __init__(self,name,dateBegin,dateEnd,comparator=None):
-        self.name = name
+        self.name = name.upper()
         self.dateBegin = dateBegin
         self.dateEnd = dateEnd
         self.comparator = comparator
@@ -57,6 +56,8 @@ class Stock:
         else:
             self.valsCompared = self.valsNorm
     def remove_comparator(self):
+        print('{} removing comparator'.format(self.name))
+        self.comparator = None
         self.valsCompared = self.valsNorm
 
     def norm_by_date(self,dateNorm):
@@ -142,14 +143,18 @@ class Stocks:
     def update_comparators(self,comparatorName):
         if self.comparatorName != comparatorName:
             if comparatorName == '':
-                for stock in self.listOfStocks:
-                    stock.remove_comparator()
+                self.remove_comparators()
             else:
                 self.comparatorName = comparatorName
                 # Create a new stock for the comparator.  Note that the comparator itself cannot *have* a comparator
                 self.comparator = Stock(name=comparatorName,dateBegin=self.dateBegin,dateEnd=self.dateEnd,comparator=None)
                 for stock in self.listOfStocks:
                     stock.update_comparator(self.comparator)
+    def remove_comparators(self):
+        self.comparator = None
+        self.comparatorName = ''
+        for stock in self.listOfStocks:
+            stock.remove_comparator()
 
     #def norm_by_index(self,normIndex):
     #    for stock in self.listOfStocks:
@@ -387,7 +392,7 @@ def update_figure(n_clicks,stocksbox,comparatorName,dateBeginAsString,dateEndAsS
     dateBegin = parse_dates(dateBeginAsString)
     dateEnd = parse_dates(dateEndAsString)
     dateNorm = parse_dates(dateNormAsString) if dateNormAsString != '' else dateBegin
-    listOfStockSymbols = stocksbox.strip('\n').split('\n')
+    listOfStockSymbols = stocksbox.upper().strip('\n').split('\n')
     stocks.set_dates(dateBegin = dateBegin.date(), dateEnd = dateEnd.date())
     stocks.update_list_of_stock_symbols(newListOfStockSymbols = listOfStockSymbols)
     stocks.update_comparators(comparatorName)
