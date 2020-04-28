@@ -9,10 +9,24 @@ h1{
   font-weight: bold;
   color: #FFF;
 }
-.title{
-  margin-top: 18px;	
+.titleBox{
+  /*margin-top: 18px;	*/
   margin-left: auto;
   margin-right: auto;
+  text-align: center;
+}
+.title{
+  font-size: 14px;
+  color: white;
+  color: #DEF;
+  margin: 0;
+  font-family: Cambria, Cochin, Georgia, Times, 'Times New Roman', serif;
+  letter-spacing: 1px;
+}
+.subtitle{
+  font-size: 8px;
+  color: #999;
+  margin: 0;
 }
 .author{
   margin-left:10px;
@@ -32,17 +46,20 @@ h5{
 
 .title-nav{
   background-color: #000;
-  height: 46px;
+  height: 30px;
   align-items: center;
-  padding: 0 10px;
+  padding: 4px 10px 4px 10px;
   /*border: 1px solid rgba(238,238,238 ,1);*/
   color: rgba(117,117,117 ,1);
   /*box-shadow: 5px 10px 20px -20px rgba(85,172,238 ,1);*/
   display: flex;
 }
+.imgLink{
+  font-size: 0;
+}
 .top-nav{
   background-color: #64A;
-  height: 46px;
+  height: 30px;
   align-items: center;
   padding: 0 10px;
   /*border: 1px solid rgba(238,238,238 ,1);*/
@@ -91,6 +108,9 @@ h5{
   text-align: left;
   border-left: 1px #888;
 }
+.wholePage{
+  margin: 30px;
+}
 .inputLabel{
   /*background-color: #B086DF;*/
   color: #777;
@@ -98,9 +118,9 @@ h5{
   font-size: 11px;
   font-weight: 700;
   text-align: left;
-  margin: 5px 8px 4px 8px;
+  margin: 5px 8px 1px 8px;
   border-bottom: 1px solid #AAA;
-  padding-bottom: 5px;
+  padding-bottom: 2px;
 }
 .box{
   height: 120px;
@@ -205,7 +225,7 @@ h5{
   /*border: None;*/
 }
 
-.topButton{
+/*.topButton{
   color: white;
   border-width: 1px;
   border-style: solid;
@@ -213,6 +233,22 @@ h5{
   border-color: white !important;
   padding: 5px 15px;
   margin-left: 20px;
+}*/
+.topButton{
+  color: white;
+  /*border-width: 1px;
+  border-style: solid;
+  border-radius: 20px !important;
+  border-color: white !important;*/
+  /*padding: 0px 15px;*/
+  margin: 0px 2px;
+  text-decoration: none;
+}
+.topLeft{
+  padding-right:30px;
+}
+.topRight{
+  padding-left: 30px;
 }
 
 .plotButton{
