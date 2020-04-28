@@ -1,3 +1,5 @@
+# Bug: when changing the norm date, you have to click replot twice
+# VTXVX VTWNX VTTVX VTHRX VTTHX VFORX VTIVX VFIFX VFFVX VTTSX VLXVX
 import logging
 from flask import Flask
 
@@ -33,10 +35,19 @@ class Stock:
         #self.df = pdr.get_data_yahoo(self.name, dateBegin, dateEnd)
         self.ticker = yf.Ticker(self.name)
         self.df = self.ticker.history(period='1d', start=dateBegin, end=dateEnd)
+        try:
+            self.logo = self.ticker.info['logo_url']
+        except:
+            self.logo = None
+        try:
+            self.shortName = self.ticker.info['shortName']
+        except:
+            self.shortName = None
         self.vals = self.df['Close'].values
         self.time = self.df.index
         self.norm_by_index(0)
         self.update_comparator(comparator) # if comparator is None, this just sets valsCompared=valsNorm
+        self.success = not self.df.empty
         
     def norm_by_index(self,normIndex):
         self.valsNorm = self.vals/self.vals[normIndex]
@@ -263,30 +274,79 @@ rightPanel = html.Div(
 
 titleNav = html.Div(
     [
-        html.Img(src='/assets/splogo.png', style={'width':'40px'}),
-        html.H1("stock-plotter.com!", className='title',),
-        html.H3("By Andrew Chap", className='author',)
+        dcc.Link(
+            html.Img(src='/assets/splogo.png', style={'width':'30px'}),
+            href='/',
+            #style={'font-size':'0'}
+            className='imgLink topButton topLeft'
+        ),
+        dcc.Link('Help',className='topButton topLeft',
+            href='/help'
+        ),
+        html.A('Examples',className='topButton',
+            href='/examples'
+        ),
+        html.Div(
+            [
+                html.H2("Stock-plotter.com",className='title'),
+                html.P("A Historical Comparison Tool",className='subtitle')
+            ],
+            className='titleBox'
+        ),
+        html.A('About',className='topButton',
+            href='/about'
+        ),
+        html.A('Contact',className='topButton topRight',
+            href='mailto:andrew@andrewchap.com'
+        ),
+        html.A(
+            html.Img(
+                src='/assets/github_logo.png',
+                style={'opacity':'1.0','width':'23px'}
+            ),
+            #className = 'author',
+            href='https://github.com/AndrewChap/stock-comparer',
+            target='_blank',
+            className='imgLink topButton topRight'
+        )
     ],
     className = 'title-nav',
 )
 
 dashApp.layout = html.Div(
     [
+        dcc.Location(id='url', refresh=False),
         html.Div(
             [
                 titleNav,
-                html.Div(bothbox, className='leftside'),
-                html.Div(
-                    [
-                        dcc.Graph(id='main-plot',style={'width':'100%'}),
-                    ],
-                    className='rightside'),
+                html.Div(id='page-content')
             ],
             className = 'contents',
         ),
     ]
 )
 
+mainPage = [
+    html.Div(bothbox, className='leftside'),
+    html.Div(
+        [
+            dcc.Graph(id='main-plot',style={'width':'100%'}),
+        ],
+        className='rightside'
+    ),
+]
+helpPage = html.Div(
+    [
+    html.H3('Introduction'),
+    html.Hr(),
+    html.P(
+        '''Stock Plotter is a tool for comparing historical performance of various stocks,
+        by dividing their historical prices by their price at a given date.  This normalization
+        is by default the start date.'''
+        )
+    ],
+    className='wholePage'
+)
 
 def parse_dates(dateAsString):
     dateAsList = dateAsString.split('/')
@@ -296,6 +356,23 @@ def parse_dates2(dateAsString):
     dateAsList = dateAsString.split('-')
     date = datetime(int(dateAsList[0]),int(dateAsList[1]),int(dateAsList[2]))
     return date
+
+@dashApp.callback(Output('page-content', 'children'),
+                 [Input('url', 'pathname')])
+def display_page(pathname):
+    if pathname == '/':
+        return mainPage
+    elif pathname == '/help':
+        return helpPage
+    elif pathname == '/examples':
+        return html.Div([
+            html.H3('Examples be here')
+        ])
+    elif pathname == '/about':
+        return html.Div([
+            html.H3('About this page')
+        ])
+
 
 @dashApp.callback(
         Output('main-plot'  , 'figure'),
@@ -320,7 +397,7 @@ def update_figure(n_clicks,stocksbox,comparatorName,dateBeginAsString,dateEndAsS
             {
                 'x': stock.time,
                 'y': stock.valsCompared,
-                'name': stock.name,
+                'name': '<b>'+stock.name+'</b>' + ((' (' + stock.shortName + ')') if stock.shortName is not None else '')
             } for stock in stocks.listOfStocks
         ]
     maxY = max([max(stock.valsCompared) for stock in stocks.listOfStocks])
@@ -337,6 +414,7 @@ def update_figure(n_clicks,stocksbox,comparatorName,dateBeginAsString,dateEndAsS
     return {
         'data': data,
         'layout': {
+            'legend': {'x':0.01, 'y':1.05},
             'yaxis': {'range': [minY,maxY]},
             'margin': {'l': 40, 'r': 40, 't': 30, 'b': 30},
         }
