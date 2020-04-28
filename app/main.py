@@ -1,3 +1,4 @@
+# Bug: when changing the norm date, you have to click replot twice
 # VTXVX VTWNX VTTVX VTHRX VTTHX VFORX VTIVX VFIFX VFFVX VTTSX VLXVX
 import logging
 from flask import Flask
@@ -287,7 +288,7 @@ titleNav = html.Div(
         ),
         html.Div(
             [
-                html.H2("stock-plotter.com",className='title'),
+                html.H2("Stock-plotter.com",className='title'),
                 html.P("A Historical Comparison Tool",className='subtitle')
             ],
             className='titleBox'
