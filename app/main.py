@@ -127,7 +127,7 @@ class Stocks:
         for stockSymbol in newListOfStockSymbols:
             if stockSymbol not in self.listOfStockSymbols:
                 print('adding stock {}'.format(stockSymbol))
-                self.listOfStocks.append(Stock(name = stockSymbol, dateBegin = self.dateBegin, dateEnd = self.dateEnd))
+                self.listOfStocks.append(Stock(name = stockSymbol, dateBegin = self.dateBegin, dateEnd = self.dateEnd, comparator = self.comparator))
         self.listOfStockSymbols = newListOfStockSymbols
 
         # Correct the order
@@ -326,7 +326,7 @@ titleNav = html.Div(
             href='/about'
         ),
         html.A('Contact',className='topButton topRight',
-            href='mailto:andrew@andrewchap.com'
+            href='/contact'
         ),
         html.A(
             html.Img(
@@ -366,62 +366,121 @@ mainPage = [
 ]
 
 
-VTI = Stock('VTI',dateBegin,dateEnd)
-BND = Stock('BND',dateBegin,dateEnd)
-fig1 = {'data':[
-    {'x':VTI.time, 'y':VTI.vals,
-     'name': '<b>'+VTI.name+'</b>' + ((' (' + VTI.shortName + ')'))},
-    {'x':BND.time, 'y':BND.vals,
-     'name': '<b>'+BND.name+'</b>' + ((' (' + BND.shortName + ')'))},
-]}
 helpStocks = Stocks(listOfStockSymbols=('VTI','BND'),dateBegin=dateBegin,dateEnd=dateEnd)
 helpStocksNorm = Stocks(listOfStockSymbols=('VTI','BND'),dateBegin=dateBegin,dateEnd=dateEnd)
 helpStocksNorm.norm_by_date(datetime(2020,2,19))
+googleStocks=Stocks(listOfStockSymbols=('GOOGL'),dateBegin=datetime(2009,3,9),dateEnd=datetime(2020,2,21))
+googleStocksComp=Stocks(listOfStockSymbols=('GOOGL'),dateBegin=datetime(2009,3,9),dateEnd=datetime(2020,2,21))
+googleStocksComp.update_comarator('SPY')
 make_plot(stocks=helpStocks,yVals='vals')
+def make_plot_help_page(**kwargs):
+    return html.Div(
+            html.Div(
+                dcc.Graph(
+                    figure=make_plot(**kwargs),
+                    className='staticGraph',
+                    style={'height': '300px'}
+                ),
+                className='staticGraphDiv'
+            ), 
+            className='staticGraphDivContainer'
+        )
+fig1 = make_plot_help_page(stocks=helpStocks,yVals='vals')
+fig2 = make_plot_help_page(stocks=helpStocks,yVals='valsNorm')
+fig3 = make_plot_help_page(stocks=helpStocksNorm,yVals='valsNorm',dateNorm=datetime(2020,2,19))
+fig4 = make_plot_help_page(stocks=googleStocks,yVals='valsCompared')
+fig5 = make_plot_help_page(stocks=googleStocksComp,yVals='valsCompared')
+
 helpPage = html.Div(
     [
-        html.H3('Introduction'),
+        html.H3('How Stock-plotter works'),
         html.Hr(),
         html.P(
             '''Stock Plotter is a tool for comparing historical performance of various stocks,
-            by dividing their historical prices by their price at a given date.  This normalization
-            is by default the start date.'''
+            by graphing their growth relative to their price at a given date.
+            Below is a quick introduction to what this means:
+            '''
         ),
         html.H5('Plotting stocks'),
         html.P(
-            '''Sure, anyone can plot stocks.  Here is a plot of a S&P 500 index fund next
-            to a Bonds index fund over the last year:'''
+            '''Plotting different stock tickers on the same graph isn't always helpful.  Here is a plot of a S&P 500 index fund next
+            to a bonds index fund over the last year:'''
         ),
-        html.Div(
-            dcc.Graph(
-                figure=make_plot(stocks=helpStocks,yVals='vals')
-            ),
-            className='staticGraph'
-        ),
-        html.P(
-            '''It looks like <b>BND</b> is significantly less volitile than <b>VTI</b>,
-            but the lower price of <b>BND</b> skews this difference.  A more representative
+        fig1,
+        dcc.Markdown(
+            '''It looks like **BND** is significantly less volitile than **VTI**,
+            but the lower price of **BND** skews this difference.  A more representative
             approach to comparing their performance is to plot them each relative to their
             starting price
             '''
         ),
-        html.Div(
-            dcc.Graph(
-                figure=make_plot(stocks=helpStocks,yVals='valsNorm')
-            ),
-            className='staticGraph'
-        ),
+        fig2,
         html.P(
             '''What if we want to compare them from the point of the COVID crash?  If we 
             normalize them to their value at the market peak of Feb 19th, 2020, we can see 
             how each has done since then.
             '''
         ),
-        html.Div(
-            dcc.Graph(
-                figure=make_plot(stocks=helpStocksNorm,yVals='valsNorm',dateNorm=datetime(2020,2,19))
-            ),
-            className='staticGraph'
+        fig3,
+        dcc.Markdown(
+            '''Notice how their values are each **1** on February 19th 2020.  This allows us 
+            to see how each fared since the date of the crash.
+            '''
+        ),
+        html.H5('The comparator'),
+        dcc.Markdown(
+            '''The "comparator" tool is used to plot how a stock has performed relative to 
+            another stock (usually an index).  Say we want to see how GOOGL's stock did during
+
+            '''
+        ),
+        # Expansion from March 6th 2009 to Feb 19th 2020
+        dcc.Markdown(
+            '''The "comparator" tool is used to plot how a stock has performed relative to 
+            another stock (usually an index).  For example, let's see how Google's stock did 
+            during the expansion from March 9th 2009 to February 19th 2020:
+            '''
+        ),
+        fig4,
+        dcc.Markdown(
+            '''That's a growth factor of 10.43, which makes that stock look like quite a smart buy.
+            But the rest of the market was doing splendidly during that time too.  Setting the 
+            "comparator" to {SP5} shows us how well Google did *relative* to {SP5}:
+            '''
+        ),
+        fig5,
+        dcc.Markdown(
+            '''Plotting the relative growth, we see that Google outperformed the market by a factor
+            of 1.7 during the 11-year expansion.'''
+        ),
+    ],
+    className='wholePage'
+)
+aboutPage = html.Div(
+    [
+        html.H3('About'),
+        html.Hr(),
+        dcc.Markdown(
+            '''Stock Plotter is a tool for comparing historical performance of various stocks,
+            by graphing their growth relative to their price at a given date.
+            '''
+        ),
+        dcc.Markdown(
+            '''This tool was created by Andrew Chap.  Please see more of my work
+            [www.andrewchap.com](http://www.andrewchap.com/).
+            '''
+        ),
+    ],
+    className='wholePage'
+)
+contactPage = html.Div(
+    [
+        html.H3('Contact'),
+        html.Hr(),
+        dcc.Markdown(
+            '''For bug reports, feature requests, or any other inquiries please contact me at
+            <andrew@andrewchap.com>.
+            '''
         ),
     ],
     className='wholePage'
@@ -448,10 +507,9 @@ def display_page(pathname):
             html.H3('Examples be here')
         ])
     elif pathname == '/about':
-        return html.Div([
-            html.H3('About this page')
-        ])
-
+        return aboutPage
+    elif pathname == '/contact':
+        return contactPage
 
 
 
