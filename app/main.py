@@ -168,6 +168,34 @@ stocks = Stocks(listOfStockSymbols = listOfStockSymbols, dateBegin = dateBegin.d
 #print("before:{} ".format(stocks.listOfStocks))
 #stocks.update_list_of_stock_symbols(newListOfStockSymbols = listOfStockSymbols)
 
+def make_plot(stocks,yVals,dateNorm=None):
+    data = [ 
+            {
+                'x': stock.time,
+                'y': getattr(stock,yVals),
+                'name': '<b>'+stock.name+'</b>' + ((' (' + stock.shortName + ')') if stock.shortName is not None else '')
+            } for stock in stocks.listOfStocks
+        ]
+    maxY = max([max(getattr(stock,yVals)) for stock in stocks.listOfStocks])
+    minY = min([min(getattr(stock,yVals)) for stock in stocks.listOfStocks])
+    if dateNorm is not None:
+        data.append(
+            {
+                'x': [dateNorm, dateNorm],
+                'y': [minY, maxY],
+                'mode': 'lines',
+                'line': {'color': 'rgba(0,0,0,0.18)'},
+                'showlegend': False,
+            }
+        )
+    return {
+        'data': data,
+        'layout': {
+            'legend': {'x':0.01, 'y':1.05},
+            'yaxis': {'range': [minY,maxY]},
+            'margin': {'l': 40, 'r': 40, 't': 30, 'b': 30},
+        }
+    }
 
 dashApp = dash.Dash(
     __name__,
@@ -266,7 +294,7 @@ bothbox = html.Div(
 # Right panel: the output plot
 rightPanel = html.Div(
     html.Div(    
-        dcc.Graph( id = 'main-plot',style={'width':'100%'}),
+        dcc.Graph(id = 'main-plot',style={'width':'100%'}),
         className='panel',
     ),
     className='right',
@@ -289,7 +317,8 @@ titleNav = html.Div(
         html.Div(
             [
                 html.H2("Stock-plotter.com",className='title'),
-                html.P("A Historical Comparison Tool",className='subtitle')
+                html.Hr(style={'margin':'0','padding':'0'}),
+                html.P("A(n) Historical Performance Comparison Tool",className='subtitle')
             ],
             className='titleBox'
         ),
@@ -335,15 +364,65 @@ mainPage = [
         className='rightside'
     ),
 ]
+
+
+VTI = Stock('VTI',dateBegin,dateEnd)
+BND = Stock('BND',dateBegin,dateEnd)
+fig1 = {'data':[
+    {'x':VTI.time, 'y':VTI.vals,
+     'name': '<b>'+VTI.name+'</b>' + ((' (' + VTI.shortName + ')'))},
+    {'x':BND.time, 'y':BND.vals,
+     'name': '<b>'+BND.name+'</b>' + ((' (' + BND.shortName + ')'))},
+]}
+helpStocks = Stocks(listOfStockSymbols=('VTI','BND'),dateBegin=dateBegin,dateEnd=dateEnd)
+helpStocksNorm = Stocks(listOfStockSymbols=('VTI','BND'),dateBegin=dateBegin,dateEnd=dateEnd)
+helpStocksNorm.norm_by_date(datetime(2020,2,19))
+make_plot(stocks=helpStocks,yVals='vals')
 helpPage = html.Div(
     [
-    html.H3('Introduction'),
-    html.Hr(),
-    html.P(
-        '''Stock Plotter is a tool for comparing historical performance of various stocks,
-        by dividing their historical prices by their price at a given date.  This normalization
-        is by default the start date.'''
-        )
+        html.H3('Introduction'),
+        html.Hr(),
+        html.P(
+            '''Stock Plotter is a tool for comparing historical performance of various stocks,
+            by dividing their historical prices by their price at a given date.  This normalization
+            is by default the start date.'''
+        ),
+        html.H5('Plotting stocks'),
+        html.P(
+            '''Sure, anyone can plot stocks.  Here is a plot of a S&P 500 index fund next
+            to a Bonds index fund over the last year:'''
+        ),
+        html.Div(
+            dcc.Graph(
+                figure=make_plot(stocks=helpStocks,yVals='vals')
+            ),
+            className='staticGraph'
+        ),
+        html.P(
+            '''It looks like <b>BND</b> is significantly less volitile than <b>VTI</b>,
+            but the lower price of <b>BND</b> skews this difference.  A more representative
+            approach to comparing their performance is to plot them each relative to their
+            starting price
+            '''
+        ),
+        html.Div(
+            dcc.Graph(
+                figure=make_plot(stocks=helpStocks,yVals='valsNorm')
+            ),
+            className='staticGraph'
+        ),
+        html.P(
+            '''What if we want to compare them from the point of the COVID crash?  If we 
+            normalize them to their value at the market peak of Feb 19th, 2020, we can see 
+            how each has done since then.
+            '''
+        ),
+        html.Div(
+            dcc.Graph(
+                figure=make_plot(stocks=helpStocksNorm,yVals='valsNorm',dateNorm=datetime(2020,2,19))
+            ),
+            className='staticGraph'
+        ),
     ],
     className='wholePage'
 )
@@ -372,6 +451,8 @@ def display_page(pathname):
         return html.Div([
             html.H3('About this page')
         ])
+
+
 
 
 @dashApp.callback(

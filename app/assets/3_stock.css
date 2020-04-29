@@ -16,13 +16,16 @@ h1{
   text-align: center;
 }
 .title{
-  font-size: 14px;
+  font-size: 16px;
   color: white;
   /*color: #DEF;*/
   font-weight: 300;
   margin: 0;
   font-family: Cambria, Cochin, Georgia, Times, 'Times New Roman', serif;
-  letter-spacing: 1.2px;
+  letter-spacing: 1.8px;
+}
+.staticGraph{
+  /*max-width: 700px;*/
 }
 .subtitle{
   font-size: 8px;
