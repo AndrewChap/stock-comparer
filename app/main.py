@@ -25,15 +25,37 @@ db = pdb.set_trace
 
 server = Flask(__name__)
 
+
+## Object to hold all the stocks that the app requests,
+## so we dont have to re-request any thatt weve alrwady requested
+#class YfPool:
+#    def __init__(self):
+#        self.tickers = list()
+#    def get_stock(self,name,dateBegin,dateEnd):
+#        for stock in self.stocks:
+#            if stock.name == name and stock.dateBegin == dateBegin and stock.dateEnd == dateEnd:
+#                return stock
+#        else:
+#            newStock = Stock(name,dateBegin,dateEnd)
+#            self.stocks.append(newStock)
+#            return newStock
+#
+#
+#yfPool = YfPool()
 # Create stock objects
 class Stock:
     def __init__(self,name,dateBegin,dateEnd,comparator=None):
         self.name = name
         self.dateBegin = dateBegin
         self.dateEnd = dateEnd
-        self.comparator = comparator
-        #self.df = pdr.get_data_yahoo(self.name, dateBegin, dateEnd)
+        self.comparator = None
+        print('Getting stock data for {}'.format(self.name))
+        
         self.ticker = yf.Ticker(self.name)
+        #thatStock = stocksPool.get_stock(name=self.name,dateBegin=dateBegin,dateEnd=dateEnd)
+
+        #self.ticker = thatStock.ticker
+        #self.df = thatStock.df
         self.df = self.ticker.history(period='1d', start=dateBegin, end=dateEnd)
         try:
             self.logo = self.ticker.info['logo_url']
@@ -87,6 +109,7 @@ class Stocks:
         self.dateEnd = dateEnd
         self.time = None
         self.comparatorName = ''
+        self.comparator = None
         self.listOfStocks = []
         self.listOfStockSymbols = listOfStockSymbols
         for stockSymbol in listOfStockSymbols:
@@ -158,7 +181,9 @@ class Stocks:
         for stock in self.listOfStocks:
             stock.norm_by_date(dateNorm)
 
-initialStockSymbols='VTI\nBND'
+MKT='SPY'
+BND='BND'
+initialStockSymbols='{}\n{}'.format(MKT,BND)
 listOfStockSymbols = initialStockSymbols.strip('\n').split('\n')
 #Set start and end as one year ago to now
 dateEnd = datetime.now()
@@ -194,6 +219,7 @@ def make_plot(stocks,yVals,dateNorm=None):
             'legend': {'x':0.01, 'y':1.05},
             'yaxis': {'range': [minY,maxY]},
             'margin': {'l': 40, 'r': 40, 't': 30, 'b': 30},
+            'showlegend': True
         }
     }
 
@@ -311,9 +337,9 @@ titleNav = html.Div(
         dcc.Link('Help',className='topButton topLeft',
             href='/help'
         ),
-        html.A('Examples',className='topButton',
-            href='/examples'
-        ),
+        #html.A('Examples',className='topButton',
+        #    href='/examples'
+        #),
         html.Div(
             [
                 html.H2("Stock-plotter.com",className='title'),
@@ -366,12 +392,12 @@ mainPage = [
 ]
 
 
-helpStocks = Stocks(listOfStockSymbols=('VTI','BND'),dateBegin=dateBegin,dateEnd=dateEnd)
-helpStocksNorm = Stocks(listOfStockSymbols=('VTI','BND'),dateBegin=dateBegin,dateEnd=dateEnd)
+helpStocks = Stocks(listOfStockSymbols=(MKT,BND),dateBegin=dateBegin,dateEnd=dateEnd)
+helpStocksNorm = Stocks(listOfStockSymbols=(MKT,BND),dateBegin=dateBegin,dateEnd=dateEnd)
 helpStocksNorm.norm_by_date(datetime(2020,2,19))
-googleStocks=Stocks(listOfStockSymbols=('GOOGL'),dateBegin=datetime(2009,3,9),dateEnd=datetime(2020,2,21))
-googleStocksComp=Stocks(listOfStockSymbols=('GOOGL'),dateBegin=datetime(2009,3,9),dateEnd=datetime(2020,2,21))
-googleStocksComp.update_comarator('SPY')
+googleStocks=Stocks(listOfStockSymbols=['GOOGL'],dateBegin=datetime(2009,3,9),dateEnd=datetime(2020,2,21))
+googleStocksComp=Stocks(listOfStockSymbols=['GOOGL'],dateBegin=datetime(2009,3,9),dateEnd=datetime(2020,2,21))
+googleStocksComp.update_comparators('SPY')
 make_plot(stocks=helpStocks,yVals='vals')
 def make_plot_help_page(**kwargs):
     return html.Div(
@@ -403,16 +429,17 @@ helpPage = html.Div(
         ),
         html.H5('Plotting stocks'),
         html.P(
-            '''Plotting different stock tickers on the same graph isn't always helpful.  Here is a plot of a S&P 500 index fund next
-            to a bonds index fund over the last year:'''
+            '''Plotting different stock tickers on the same graph isn't always helpful.  
+            Here is a plot of an S&P 500 index fund ({MKT}) along with
+            a bonds index fund ({BND}) over the last year:'''.format(MKT=MKT,BND=BND)
         ),
         fig1,
         dcc.Markdown(
-            '''It looks like **BND** is significantly less volitile than **VTI**,
-            but the lower price of **BND** skews this difference.  A more representative
+            '''It looks like **{BND}** is significantly less volitile than **{MKT}**,
+            but the lower price of **{BND}** skews this difference.  A more representative
             approach to comparing their performance is to plot them each relative to their
             starting price
-            '''
+            '''.format(BND=BND,MKT=MKT)
         ),
         fig2,
         html.P(
@@ -445,8 +472,8 @@ helpPage = html.Div(
         dcc.Markdown(
             '''That's a growth factor of 10.43, which makes that stock look like quite a smart buy.
             But the rest of the market was doing splendidly during that time too.  Setting the 
-            "comparator" to {SP5} shows us how well Google did *relative* to {SP5}:
-            '''
+            "comparator" to {MKT} shows us how well Google did *relative* to {MKT}:
+            '''.format(MKT=MKT)
         ),
         fig5,
         dcc.Markdown(
@@ -556,6 +583,7 @@ def update_figure(n_clicks,stocksbox,comparatorName,dateBeginAsString,dateEndAsS
             'legend': {'x':0.01, 'y':1.05},
             'yaxis': {'range': [minY,maxY]},
             'margin': {'l': 40, 'r': 40, 't': 30, 'b': 30},
+            'showlegend': True,
         }
     }
 
