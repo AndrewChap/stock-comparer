@@ -1,4 +1,6 @@
 # VTXVX VTWNX VTTVX VTHRX VTTHX VFORX VTIVX VFIFX VFFVX VTTSX VLXVX
+STOCK_INTERFACE = 'yfinance' # 'google' or 'yahoo' or 'yfinance'
+
 import logging
 from flask import Flask
 
@@ -13,6 +15,8 @@ import numpy as np
 import yfinance as yf
 
 from pandas import Series, DataFrame
+import pandas_datareader
+import pandas_datareader.data as web
 # Datetime for dealing with stock dates
 from datetime import datetime
 import datetime as dt
@@ -24,23 +28,47 @@ db = pdb.set_trace
 
 server = Flask(__name__)
 
+class RawStock:
+    def __init__(self,name,dateBegin,dateEnd):
+        self.name = name.upper()
+        self.dateBegin = dateBegin
+        self.dateEnd = dateEnd
+        print('Getting stock data for {}'.format(self.name))
+        self.ticker = yf.Ticker(self.name)
+        if STOCK_INTERFACE == 'yfinance':
+            self.df = yf.Ticker(self.name).history(period='1d', start=dateBegin, end=dateEnd)
+            self.vals = self.df['Close'].values
+        elif STOCK_INTERFACE == 'yahoo':
+            self.df = web.DataReader(self.name, STOCK_INTERFACE, dateBegin, dateEnd)
+            self.vals = self.df['Adj Close'].values
+        elif STOCK_INTERFACE == 'google':
+            self.df = web.DataReader(
+        #elif STOCK_INTERFACE == 'quandl':
+        #    self.df =
+        #    
+        #     VyyvzHDjRtRD1AhZojKn
+        'google',
+        dt(2017, 1, 1),
+        dt.now()
+    )
+
+class RawStocksPool:
+    def __init__(self):
+        self.rawStocks = list()
+    def get_raw_stock(self,name,dateBegin,dateEnd):
+        for rawStock in self.rawStocks:
+            if rawStock.name == name and rawStock.dateBegin == dateBegin and rawStock.dateEnd == dateEnd:
+                print('already had data for {}'.format(name))
+                return rawStock
+        print('Need to fetch data for {}'.format(name))
+        newRawStock = RawStock(name,dateBegin,dateEnd)
+        self.rawStocks.append(newRawStock)
+        return newRawStock
+
+rawStocksPool = RawStocksPool()
 
 ## Object to hold all the stocks that the app requests,
 ## so we dont have to re-request any thatt weve alrwady requested
-#class YfPool:
-#    def __init__(self):
-#        self.tickers = list()
-#    def get_stock(self,name,dateBegin,dateEnd):
-#        for stock in self.stocks:
-#            if stock.name == name and stock.dateBegin == dateBegin and stock.dateEnd == dateEnd:
-#                return stock
-#        else:
-#            newStock = Stock(name,dateBegin,dateEnd)
-#            self.stocks.append(newStock)
-#            return newStock
-#
-#
-#yfPool = YfPool()
 # Create stock objects
 class Stock:
     def __init__(self,name,dateBegin,dateEnd,comparator=None):
@@ -48,14 +76,12 @@ class Stock:
         self.dateBegin = dateBegin
         self.dateEnd = dateEnd
         self.comparator = None
-        print('Getting stock data for {}'.format(self.name))
         
         self.ticker = yf.Ticker(self.name)
-        #thatStock = stocksPool.get_stock(name=self.name,dateBegin=dateBegin,dateEnd=dateEnd)
-
-        #self.ticker = thatStock.ticker
-        #self.df = thatStock.df
-        self.df = self.ticker.history(period='1d', start=dateBegin, end=dateEnd)
+        print('get_raw_stock')
+        rawStock = rawStocksPool.get_raw_stock(name=self.name,dateBegin=dateBegin,dateEnd=dateEnd)
+        print('done')
+        self.df = rawStock.df
         try:
             self.logo = self.ticker.info['logo_url']
         except:
@@ -64,7 +90,7 @@ class Stock:
             self.shortName = self.ticker.info['shortName']
         except:
             self.shortName = None
-        self.vals = self.df['Close'].values
+        self.vals = rawStock.vals
         self.time = self.df.index
         self.norm_by_index(0)
         self.update_comparator(comparator) # if comparator is None, this just sets valsCompared=valsNorm
@@ -98,6 +124,7 @@ class Stock:
         #self.valsNorm = self.vals/self.vals[normIndex]
     def __repr__(self):
         return 'stock({},{},{})'.format(self.name,self.dateBegin,self.dateEnd)
+
         
 class Stocks:
     def __init__(
@@ -189,7 +216,7 @@ class Stocks:
 MKT='SPY'
 BND='BND'
 initialStockSymbols='{}\n{}'.format(MKT,BND)
-listOfStockSymbols = initialStockSymbols.strip('\n').split('\n')
+listOfStockSymbols = ''#initialStockSymbols.strip('\n').split('\n')
 #Set start and end as one year ago to now
 dateEnd = datetime.now()
 dateBegin = dateEnd - relativedelta(years=1)
