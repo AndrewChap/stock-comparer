@@ -17,3 +17,5 @@ Also made a Jupyter notebook for comparing a few different stocks.  Get the [Sto
 * Add in calendar selector for dates (Dash's DatePicker doesn't seem to work well, so look into getting another tool into Dash)
 * Plot hovers should show actual price of stock data (or have a checkbox list to choose what to display)
 * Improve performance by only refetching non-existant data rather than refetching all data (when ranges are different)
+* Move stock classes into separate module
+* Move help page to separate file
