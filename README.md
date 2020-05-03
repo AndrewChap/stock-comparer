@@ -16,4 +16,4 @@ Also made a Jupyter notebook for comparing a few different stocks.  Get the [Sto
 * Checkbox to make it a semilog-y plot
 * Add in calendar selector for dates (Dash's DatePicker doesn't seem to work well, so look into getting another tool into Dash)
 * Plot hovers should show actual price of stock data (or have a checkbox list to choose what to display)
-* Improve performance by not fetching stock data redundantly
+* Improve performance by only refetching non-existant data rather than refetching all data (when ranges are different)
