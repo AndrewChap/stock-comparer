@@ -1,5 +1,6 @@
 # VTXVX VTWNX VTTVX VTHRX VTTHX VFORX VTIVX VFIFX VFFVX VTTSX VLXVX
 STOCK_INTERFACE = 'yfinance' # 'google' or 'yahoo' or 'yfinance'
+PICKLING = True
 
 import logging
 from flask import Flask
@@ -11,6 +12,9 @@ import dash_html_components as html
 from dash.dependencies import Input, Output, State
 # Numpy for arrays
 import numpy as np
+import pandas as pd
+import os
+import pickle
 
 import yfinance as yf
 
@@ -35,23 +39,43 @@ class RawStock:
         self.dateEnd = dateEnd
         print('Getting stock data for {}'.format(self.name))
         self.ticker = yf.Ticker(self.name)
+        self.shortName = None
+        self.logo = None
+
         if STOCK_INTERFACE == 'yfinance':
-            self.df = yf.Ticker(self.name).history(period='1d', start=dateBegin, end=dateEnd)
+            try:
+                pickleName = '{}_{}_{}.pickle'.format(self.name,dateBegin.date(),dateEnd.date())
+            except:
+                pickleName = '{}_{}_{}.pickle'.format(self.name,dateBegin,dateEnd)
+            dfPickleName = 'df-'+pickleName
+            tickerPickleName = 'ticker-'+pickleName
+            if os.path.exists(pickleName) and PICKLING:
+                print('loading {} from pickle...'.format(pickleName))
+                self.df = pd.read_pickle(pickleName)
+                #self.shortName = pickle.load(pickleName+'.shortName')
+                self.shortName = None
+                print('Finished loading {} from pickle'.format(pickleName))
+            else:
+                print('Fetching data for {} from pickle'.format(pickleName))
+                ticker = yf.Ticker(self.name)
+                self.df = ticker.history(period='1d', start=dateBegin, end=dateEnd)
+                self.df.to_pickle(pickleName)
+                #pickle.dump(ticker.info['shortName'],pickleName+'.shortName')
+                self.shortName = None
+            #self.df = ticker.history(period='1d', start=dateBegin, end=dateEnd)
             self.vals = self.df['Close'].values
+            self.time = self.df.index
+            #try:
+            #    self.shortName = ticker.info['shortName']
+            #except:
+            #    pass
         elif STOCK_INTERFACE == 'yahoo':
             self.df = web.DataReader(self.name, STOCK_INTERFACE, dateBegin, dateEnd)
             self.vals = self.df['Adj Close'].values
+            self.time = self.df.index
         elif STOCK_INTERFACE == 'google':
-            self.df = web.DataReader(
-        #elif STOCK_INTERFACE == 'quandl':
-        #    self.df =
-        #    
+            self.df = web.DataReader( 'google', dt(2017, 1, 1), dt.now())
         #     VyyvzHDjRtRD1AhZojKn
-        'google',
-        dt(2017, 1, 1),
-        dt.now()
-    )
-
 class RawStocksPool:
     def __init__(self):
         self.rawStocks = list()
@@ -79,22 +103,21 @@ class Stock:
         
         self.ticker = yf.Ticker(self.name)
         print('get_raw_stock')
-        rawStock = rawStocksPool.get_raw_stock(name=self.name,dateBegin=dateBegin,dateEnd=dateEnd)
+        rawStock = rawStocksPool.get_raw_stock(name=self.name,dateBegin=self.dateBegin,dateEnd=self.dateEnd)
         print('done')
         self.df = rawStock.df
-        try:
-            self.logo = self.ticker.info['logo_url']
-        except:
-            self.logo = None
-        try:
-            self.shortName = self.ticker.info['shortName']
-        except:
-            self.shortName = None
+        self.logo = rawStock.logo
+        self.shortName = rawStock.shortName
         self.vals = rawStock.vals
-        self.time = self.df.index
+        self.time = rawStock.time
+        #self.time = self.df.index
+        print('norm')
         self.norm_by_index(0)
+        print('update_comparator')
         self.update_comparator(comparator) # if comparator is None, this just sets valsCompared=valsNorm
         self.success = not self.df.empty
+        print('finished')
+
         
     def norm_by_index(self,normIndex):
         self.valsNorm = self.vals/self.vals[normIndex]
