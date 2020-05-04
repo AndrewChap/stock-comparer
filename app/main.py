@@ -37,35 +37,44 @@ class RawStock:
         self.name = name.upper()
         self.dateBegin = dateBegin
         self.dateEnd = dateEnd
+        # CLEANUP - test deleting next two lines
         print('Getting stock data for {}'.format(self.name))
         self.ticker = yf.Ticker(self.name)
         self.shortName = None
         self.logo = None
 
         if STOCK_INTERFACE == 'yfinance':
+            # CLEANUP figure out why this try/except is needed, fix it
             try:
                 pickleName = '{}_{}_{}.pickle'.format(self.name,dateBegin.date(),dateEnd.date())
             except:
                 pickleName = '{}_{}_{}.pickle'.format(self.name,dateBegin,dateEnd)
-            dfPickleName = 'df-'+pickleName
-            tickerPickleName = 'ticker-'+pickleName
+            #dfPickleName = 'df-'+pickleName
+            #tickerPickleName = 'ticker-'+pickleName
+            # CLeanup: make more pythonic methods for saving/loading
+            # CLEANUP: create pickle directory if it doesn't exist
+            # FUTURE: use redis because it can put lifetimes on files https://cloud.google.com/appengine/docs/standard/python3/using-memorystore
             if os.path.exists(pickleName) and PICKLING:
                 print('loading {} from pickle...'.format(pickleName))
                 self.df = pd.read_pickle(pickleName)
-                #self.shortName = pickle.load(pickleName+'.shortName')
-                self.shortName = None
+                print('getting ticker name')
+                #self.info = pickle.load(pickleName+'.info')
+                with open(pickleName + '.info', 'rb') as handle:
+                    self.info = pickle.load(handle)
                 print('Finished loading {} from pickle'.format(pickleName))
             else:
-                print('Fetching data for {} from pickle'.format(pickleName))
+                print('Fetching data for {}'.format(pickleName))
                 self.ticker = yf.Ticker(self.name)
                 self.df = self.ticker.history(period='1d', start=dateBegin, end=dateEnd)
+                self.info = self.ticker.info
                 try:
                     self.df.to_pickle(pickleName)
                 except:
                     pass
-                self.shortName = self.ticker.info['shortName']
-                pickle.dump(self.shortName,pickleName+'.shortName')
+                with open(pickleName+'.info', 'wb') as handle:
+                    pickle.dump(self.info, handle, protocol=pickle.HIGHEST_PROTOCOL)
             #self.df = ticker.history(period='1d', start=dateBegin, end=dateEnd)
+            self.shortName = self.info['shortName']
             self.vals = self.df['Close'].values
             self.time = self.df.index
             #try:
@@ -251,6 +260,7 @@ stocks = Stocks(listOfStockSymbols = listOfStockSymbols, dateBegin = dateBegin.d
 #print("before:{} ".format(stocks.listOfStocks))
 #stocks.update_list_of_stock_symbols(newListOfStockSymbols = listOfStockSymbols)
 
+# CLEANUP use make_plot for ALL plots
 def make_plot(stocks,yVals,dateNorm=None):
     data = [ 
             {
@@ -286,6 +296,7 @@ dashApp = dash.Dash(
     server=server,
     #routes_pathname_prefix='/dash/'
 )
+#CUSTOM HTML for Google Adsense
 dashApp.title = 'Stock Plotter'
 dashApp.index_string = '''
 <!DOCTYPE html>

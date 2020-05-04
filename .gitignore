@@ -1,3 +1,4 @@
 env-s/
 app/__pycache__/
 *.pickle
+*.pickle.info
