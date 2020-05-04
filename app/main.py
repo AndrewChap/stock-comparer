@@ -57,11 +57,14 @@ class RawStock:
                 print('Finished loading {} from pickle'.format(pickleName))
             else:
                 print('Fetching data for {} from pickle'.format(pickleName))
-                ticker = yf.Ticker(self.name)
-                self.df = ticker.history(period='1d', start=dateBegin, end=dateEnd)
-                self.df.to_pickle(pickleName)
-                #pickle.dump(ticker.info['shortName'],pickleName+'.shortName')
-                self.shortName = None
+                self.ticker = yf.Ticker(self.name)
+                self.df = self.ticker.history(period='1d', start=dateBegin, end=dateEnd)
+                try:
+                    self.df.to_pickle(pickleName)
+                except:
+                    pass
+                self.shortName = self.ticker.info['shortName']
+                pickle.dump(self.shortName,pickleName+'.shortName')
             #self.df = ticker.history(period='1d', start=dateBegin, end=dateEnd)
             self.vals = self.df['Close'].values
             self.time = self.df.index
