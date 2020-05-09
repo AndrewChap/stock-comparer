@@ -302,13 +302,29 @@ dashApp.index_string = '''
 <!DOCTYPE html>
 <html>
     <head>
-        <script data-ad-client="ca-pub-5585892045097111" async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+        <!-- <script data-ad-client="ca-pub-5585892045097111" async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script> -->
+        <script type="text/javascript">
+            window._mNHandle = window._mNHandle || {};
+            window._mNHandle.queue = window._mNHandle.queue || [];
+            medianet_versionId = "3121199";
+        </script>
+        <script src="https://contextual.media.net/dmedianet.js?cid=8CU46N564" async="async"></script>
         {%metas%}
         <title>{%title%}</title>
         {%favicon%}
         {%css%}
     </head>
     <body>
+        <div id="756532356">
+            <script type="text/javascript">
+                try {
+                    window._mNHandle.queue.push(function (){
+                        window._mNDetails.loadTag("756532356", "160x600", "756532356");
+                    });
+                }
+                catch (error) {}
+            </script>
+        </div>
         {%app_entry%}
         <footer>
             {%config%}
