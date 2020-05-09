@@ -15,6 +15,7 @@ import numpy as np
 import pandas as pd
 import os
 import pickle
+import glob
 
 import yfinance as yf
 
@@ -43,51 +44,44 @@ class RawStock:
         self.shortName = None
         self.logo = None
 
-        if STOCK_INTERFACE == 'yfinance':
-            # CLEANUP figure out why this try/except is needed, fix it
+        # CLEANUP figure out why this try/except is needed, fix it
+        try:
+            pickleName = '{}_{}_{}.pickle'.format(self.name,dateBegin.date(),dateEnd.date())
+        except:
+            pickleName = '{}_{}_{}.pickle'.format(self.name,dateBegin,dateEnd)
+        #dfPickleName = 'df-'+pickleName
+        #tickerPickleName = 'ticker-'+pickleName
+        # CLeanup: make more pythonic methods for saving/loading
+        # CLEANUP: create pickle directory if it doesn't exist
+        if not os.path.exists('pickles'):
+            os.mkdir('pickles')
+            picks = glob.glob('*.pickle*')
+            for pick in picks:
+                os.remove(pick)
+        # FUTURE: use redis because it can put lifetimes on files https://cloud.google.com/appengine/docs/standard/python3/using-memorystore
+        if os.path.exists(pickleName) and PICKLING:
+            print('loading {} from pickle...'.format(pickleName))
+            self.df = pd.read_pickle(pickleName)
+            print('getting ticker name')
+            #self.info = pickle.load(pickleName+'.info')
+            with open(pickleName + '.info', 'rb') as handle:
+                self.info = pickle.load(handle)
+            print('Finished loading {} from pickle'.format(pickleName))
+        else:
+            print('Fetching data for {}'.format(pickleName))
+            self.ticker = yf.Ticker(self.name)
+            self.df = self.ticker.history(period='1d', start=dateBegin, end=dateEnd)
+            self.info = self.ticker.info
             try:
-                pickleName = '{}_{}_{}.pickle'.format(self.name,dateBegin.date(),dateEnd.date())
+                self.df.to_pickle(pickleName)
             except:
-                pickleName = '{}_{}_{}.pickle'.format(self.name,dateBegin,dateEnd)
-            #dfPickleName = 'df-'+pickleName
-            #tickerPickleName = 'ticker-'+pickleName
-            # CLeanup: make more pythonic methods for saving/loading
-            # CLEANUP: create pickle directory if it doesn't exist
-            # FUTURE: use redis because it can put lifetimes on files https://cloud.google.com/appengine/docs/standard/python3/using-memorystore
-            if os.path.exists(pickleName) and PICKLING:
-                print('loading {} from pickle...'.format(pickleName))
-                self.df = pd.read_pickle(pickleName)
-                print('getting ticker name')
-                #self.info = pickle.load(pickleName+'.info')
-                with open(pickleName + '.info', 'rb') as handle:
-                    self.info = pickle.load(handle)
-                print('Finished loading {} from pickle'.format(pickleName))
-            else:
-                print('Fetching data for {}'.format(pickleName))
-                self.ticker = yf.Ticker(self.name)
-                self.df = self.ticker.history(period='1d', start=dateBegin, end=dateEnd)
-                self.info = self.ticker.info
-                try:
-                    self.df.to_pickle(pickleName)
-                except:
-                    pass
-                with open(pickleName+'.info', 'wb') as handle:
-                    pickle.dump(self.info, handle, protocol=pickle.HIGHEST_PROTOCOL)
-            #self.df = ticker.history(period='1d', start=dateBegin, end=dateEnd)
-            self.shortName = self.info['shortName']
-            self.vals = self.df['Close'].values
-            self.time = self.df.index
-            #try:
-            #    self.shortName = ticker.info['shortName']
-            #except:
-            #    pass
-        elif STOCK_INTERFACE == 'yahoo':
-            self.df = web.DataReader(self.name, STOCK_INTERFACE, dateBegin, dateEnd)
-            self.vals = self.df['Adj Close'].values
-            self.time = self.df.index
-        elif STOCK_INTERFACE == 'google':
-            self.df = web.DataReader( 'google', dt(2017, 1, 1), dt.now())
-        #     VyyvzHDjRtRD1AhZojKn
+                pass
+            with open(pickleName+'.info', 'wb') as handle:
+                pickle.dump(self.info, handle, protocol=pickle.HIGHEST_PROTOCOL)
+        self.shortName = self.info['shortName']
+        self.vals = self.df['Close'].values
+        self.time = self.df.index
+
 class RawStocksPool:
     def __init__(self):
         self.rawStocks = list()
