@@ -60,8 +60,6 @@ class RawStock:
         if os.path.exists(pickleName) and PICKLING:
             print('loading {} from pickle...'.format(pickleName))
             self.df = pd.read_pickle(pickleName)
-            print('getting ticker name')
-            #self.info = pickle.load(pickleName+'.info')
             with open(pickleName + '.info', 'rb') as handle:
                 self.info = pickle.load(handle)
             print('Finished loading {} from pickle'.format(pickleName))
@@ -106,21 +104,16 @@ class Stock:
         self.comparator = None
         
         self.ticker = yf.Ticker(self.name)
-        print('get_raw_stock')
         rawStock = rawStocksPool.get_raw_stock(name=self.name,dateBegin=self.dateBegin,dateEnd=self.dateEnd)
-        print('done')
         self.df = rawStock.df
         self.logo = rawStock.logo
         self.shortName = rawStock.shortName
         self.vals = rawStock.vals
         self.time = rawStock.time
         #self.time = self.df.index
-        print('norm {} to 0'.format(self.name))
         self.norm_by_index(0)
-        print('update_comparator')
         self.update_comparator(comparator) # if comparator is None, this just sets valsCompared=valsNorm
         self.success = not self.df.empty
-        print('finished')
 
         
     def norm_by_index(self,normIndex):
@@ -133,7 +126,6 @@ class Stock:
         else:
             self.valsCompared = self.valsNorm
     def remove_comparator(self):
-        print('{} removing comparator'.format(self.name))
         self.comparator = None
         self.valsCompared = self.valsNorm
 
@@ -149,7 +141,6 @@ class Stock:
         # Only needed if we wanted to return what date we are actually norming on
         if normIndex == 0:
             dateNorm = dates[0]
-        print("norm-by-date: norm {} at index {}".format(self.name,normIndex))
         self.norm_by_index(normIndex)
         #self.valsNorm = self.vals/self.vals[normIndex]
     def __repr__(self):
@@ -207,7 +198,6 @@ class Stocks:
         # Add new stocks to list that are not in the original list
         for stockSymbol in newListOfStockSymbols:
             if stockSymbol not in self.listOfStockSymbols:
-                print('adding stock {}'.format(stockSymbol))
                 self.listOfStocks.append(Stock(name = stockSymbol, dateBegin = self.dateBegin, dateEnd = self.dateEnd, comparator = self.comparator))
         self.listOfStockSymbols = newListOfStockSymbols
 
@@ -252,7 +242,6 @@ dateEnd = datetime.now()
 dateBegin = dateEnd - relativedelta(years=1)
 stocks = Stocks(listOfStockSymbols = listOfStockSymbols, dateBegin = dateBegin.date(), dateEnd = dateEnd.date())
 #stocks.set_dates(dateBegin = dateBegin.date(), dateEnd = dateEnd.date())
-#print("before:{} ".format(stocks.listOfStocks))
 #stocks.update_list_of_stock_symbols(newListOfStockSymbols = listOfStockSymbols)
 
 # CLEANUP use make_plot for ALL plots
@@ -622,7 +611,6 @@ def update_figure(n_clicks,stocksbox,comparatorName,dateBeginAsString,dateEndAsS
     stocks.update_list_of_stock_symbols(newListOfStockSymbols = listOfStockSymbols)
     stocks.update_comparators(comparatorName)
     #stocks.norm_by_index(normIndex = sliderValue)
-    print("update_figure dateNorm is {}".format(dateNorm))
     stocks.norm_by_date(dateNorm = dateNorm)
     data = [ 
             {
