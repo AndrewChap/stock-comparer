@@ -115,7 +115,7 @@ class Stock:
         self.vals = rawStock.vals
         self.time = rawStock.time
         #self.time = self.df.index
-        print('norm')
+        print('norm {} to 0'.format(self.name))
         self.norm_by_index(0)
         print('update_comparator')
         self.update_comparator(comparator) # if comparator is None, this just sets valsCompared=valsNorm
@@ -124,7 +124,9 @@ class Stock:
 
         
     def norm_by_index(self,normIndex):
+        #db()
         self.valsNorm = self.vals/self.vals[normIndex]
+        self.update_comparator(self.comparator)
     def update_comparator(self,comparator):
         if comparator:
             self.valsCompared = [v/n for v,n in zip(self.valsNorm,comparator.valsNorm)]
@@ -147,6 +149,7 @@ class Stock:
         # Only needed if we wanted to return what date we are actually norming on
         if normIndex == 0:
             dateNorm = dates[0]
+        print("norm-by-date: norm {} at index {}".format(self.name,normIndex))
         self.norm_by_index(normIndex)
         #self.valsNorm = self.vals/self.vals[normIndex]
     def __repr__(self):
@@ -619,6 +622,7 @@ def update_figure(n_clicks,stocksbox,comparatorName,dateBeginAsString,dateEndAsS
     stocks.update_list_of_stock_symbols(newListOfStockSymbols = listOfStockSymbols)
     stocks.update_comparators(comparatorName)
     #stocks.norm_by_index(normIndex = sliderValue)
+    print("update_figure dateNorm is {}".format(dateNorm))
     stocks.norm_by_date(dateNorm = dateNorm)
     data = [ 
             {
