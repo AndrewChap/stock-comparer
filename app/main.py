@@ -38,19 +38,17 @@ class RawStock:
         self.name = name.upper()
         self.dateBegin = dateBegin
         self.dateEnd = dateEnd
-        # CLEANUP - test deleting next two lines
         self.shortName = None
         self.logo = None
 
         # CLEANUP figure out why this try/except is needed, fix it
         try:
             pickleName = '{}_{}_{}.pickle'.format(self.name,dateBegin.date(),dateEnd.date())
+            print(' --- Stock {} had full datetime'.format(self.name))
         except:
             pickleName = '{}_{}_{}.pickle'.format(self.name,dateBegin,dateEnd)
-        #dfPickleName = 'df-'+pickleName
-        #tickerPickleName = 'ticker-'+pickleName
+            print(' --- Stock {} had only date'.format(self.name))
         # CLeanup: make more pythonic methods for saving/loading
-        # CLEANUP: create pickle directory if it doesn't exist
         if not os.path.exists('pickles'):
             os.mkdir('pickles')
             picks = glob.glob('*.pickle*')
