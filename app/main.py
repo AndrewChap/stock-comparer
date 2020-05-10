@@ -39,8 +39,6 @@ class RawStock:
         self.dateBegin = dateBegin
         self.dateEnd = dateEnd
         # CLEANUP - test deleting next two lines
-        print('Getting stock data for {}'.format(self.name))
-        self.ticker = yf.Ticker(self.name)
         self.shortName = None
         self.logo = None
 
