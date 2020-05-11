@@ -41,13 +41,8 @@ class RawStock:
         self.shortName = None
         self.logo = None
 
-        # CLEANUP figure out why this try/except is needed, fix it
-        try:
-            pickleName = '{}_{}_{}.pickle'.format(self.name,dateBegin.date(),dateEnd.date())
-            print(' --- Stock {} had full datetime'.format(self.name))
-        except:
-            pickleName = '{}_{}_{}.pickle'.format(self.name,dateBegin,dateEnd)
-            print(' --- Stock {} had only date'.format(self.name))
+        pickleName = '{}_{}_{}.pickle'.format(self.name,dateBegin,dateEnd)
+
         # CLeanup: make more pythonic methods for saving/loading
         if not os.path.exists('pickles'):
             os.mkdir('pickles')
@@ -152,15 +147,21 @@ class Stocks:
         dateBegin = datetime.now() - relativedelta(years=1),
         dateEnd = datetime.now()
     ):
-        self.dateBegin = dateBegin
-        self.dateEnd = dateEnd
+        try:
+            self.dateBegin = dateBegin.date()
+        except:
+            self.dateBegin = dateBegin
+        try:
+            self.dateEnd = dateEnd.date()
+        except:
+            self.dateEnd = dateEnd
         self.time = None
         self.comparatorName = ''
         self.comparator = None
         self.listOfStocks = []
         self.listOfStockSymbols = listOfStockSymbols
         for stockSymbol in listOfStockSymbols:
-            stock = Stock(stockSymbol,dateBegin=dateBegin,dateEnd=dateEnd)
+            stock = Stock(stockSymbol,dateBegin=self.dateBegin,dateEnd=self.dateEnd)
             self.listOfStocks.append(stock)
             self.set_global_time(othertime = stock.time)
     def set_global_time(self,othertime):
@@ -179,6 +180,14 @@ class Stocks:
                 self.time = self.time + othertime[index:]
 
     def set_dates(self,dateBegin,dateEnd):
+        try:
+            dateBegin = dateBegin.date()
+        except:
+            pass
+        try:
+            dateEnd = dateEnd.date()
+        except:
+            pass
         if (self.dateBegin != dateBegin) or (self.dateEnd != dateEnd):
             self.dateBegin = dateBegin
             self.dateEnd = dateEnd
