@@ -38,7 +38,6 @@ class RawStock:
         self.name = name.upper()
         self.dateBegin = dateBegin
         self.dateEnd = dateEnd
-        # CLEANUP - test deleting next two lines
         self.shortName = None
         self.logo = None
 
@@ -47,10 +46,7 @@ class RawStock:
             pickleName = '{}_{}_{}.pickle'.format(self.name,dateBegin.date(),dateEnd.date())
         except:
             pickleName = '{}_{}_{}.pickle'.format(self.name,dateBegin,dateEnd)
-        #dfPickleName = 'df-'+pickleName
-        #tickerPickleName = 'ticker-'+pickleName
         # CLeanup: make more pythonic methods for saving/loading
-        # CLEANUP: create pickle directory if it doesn't exist
         if not os.path.exists('pickles'):
             os.mkdir('pickles')
             picks = glob.glob('*.pickle*')
@@ -71,7 +67,7 @@ class RawStock:
             try:
                 self.df.to_pickle(pickleName)
             except:
-                pass
+                print('UNABLE TO SAVE PICKLE')
             with open(pickleName+'.info', 'wb') as handle:
                 pickle.dump(self.info, handle, protocol=pickle.HIGHEST_PROTOCOL)
         self.shortName = self.info['shortName']
